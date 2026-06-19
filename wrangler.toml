@@ -4,4 +4,4 @@ pages_build_output_dir = "dist"
 
 [[kv_namespaces]]
 binding = "FIFA_KV"
-id = "TBD"  # Will be created with: wrangler kv namespace create FIFA_KV
+id = "fce7bde466cb4ae7863ba9abd620ccee"
