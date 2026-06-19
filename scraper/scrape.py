@@ -202,6 +202,19 @@ def compute_tournament_info(groups, matches):
 
 def build_payload(groups, matches, info):
     """Build the full payload for the Worker."""
+    # Infer group for matches that lack it (ESPN does not always provide it)
+    team_to_group = {}
+    for g, group in groups.items():
+        for t in group["teams"]:
+            team_to_group[t["team"]] = g
+    
+    for match in matches:
+        if not match.get("group"):
+            home_g = team_to_group.get(match["home"]["team"], "")
+            away_g = team_to_group.get(match["away"]["team"], "")
+            if home_g and home_g == away_g:
+                match["group"] = home_g
+    
     return {
         "groups": groups,
         "matches": matches,
