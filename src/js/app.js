@@ -1,10 +1,18 @@
-import { subscribe, startPolling, R32_BRACKET } from './data.js';
+import { subscribe, startPolling, getData, R32_BRACKET } from './data.js';
+import { 
+  setPrediction, getPrediction, clearAllPredictions, getPredictionCount,
+  setUpdateCallback, simulateStandings, getSimulatedThirds, getSimulatedBracket 
+} from './simulator.js';
 
 // --- Init ---
 function init() {
   initTabs();
   startPolling();
   subscribe(render);
+  setUpdateCallback(() => {
+    const data = getData();
+    if (data) renderSimulator(data);
+  });
 }
 
 function render(data) {
@@ -13,6 +21,7 @@ function render(data) {
   renderThirdPlace(data);
   renderBracket(data);
   renderSchedule(data);
+  renderSimulator(data);
   updateMeta(data);
 }
 
@@ -96,54 +105,28 @@ function renderBracket(data) {
   }
 
   let html = `<div class="bracket-section">
-    <div class="bracket-legend">
-      <p>Round of 32 matchups based on current group standings. Third-place slots depend on which groups' 3rd-place teams qualify.</p>
-    </div>`;
+    <div class="bracket-legend"><p>Round of 32 matchups based on current group standings. Third-place slots depend on which groups' 3rd-place teams qualify.</p></div>`;
     
-  // Split into two halves for the bracket tree visual
   const leftHalf = R32_BRACKET.slice(0, 8);
   const rightHalf = R32_BRACKET.slice(8, 16);
   
   html += '<div class="bracket-halves">';
-  
-  // Left half
   html += '<div class="bracket-half"><h4>Left Bracket</h4><div class="bracket-matches">';
-  leftHalf.forEach(m => {
-    const home = resolveTeam(m.home);
-    const away = resolveTeam(m.away);
-    const isTbd = away.team.includes('TBD');
-    html += renderBracketMatch(m, home, away, isTbd);
-  });
+  leftHalf.forEach(m => { html += renderBracketMatch(m, resolveTeam(m.home), resolveTeam(m.away)); });
   html += '</div></div>';
-  
-  // Right half
   html += '<div class="bracket-half"><h4>Right Bracket</h4><div class="bracket-matches">';
-  rightHalf.forEach(m => {
-    const home = resolveTeam(m.home);
-    const away = resolveTeam(m.away);
-    const isTbd = away.team.includes('TBD');
-    html += renderBracketMatch(m, home, away, isTbd);
-  });
-  html += '</div></div>';
-  
-  html += '</div>'; // bracket-halves
+  rightHalf.forEach(m => { html += renderBracketMatch(m, resolveTeam(m.home), resolveTeam(m.away)); });
+  html += '</div></div></div>';
 
-  // Tournament tree (later rounds)
   html += `<div class="bracket-tree">
-    <div class="tree-header">
-      <span class="tree-stage">R32</span>
-      <span class="tree-stage">R16</span>
-      <span class="tree-stage">QF</span>
-      <span class="tree-stage">SF</span>
-      <span class="tree-stage">Final</span>
-    </div>
-    <div class="tree-note">Knockout bracket will fill in as matches are decided (starts ~June 28)</div>
+    <div class="tree-header"><span class="tree-stage">R32</span><span class="tree-stage">R16</span><span class="tree-stage">QF</span><span class="tree-stage">SF</span><span class="tree-stage">Final</span></div>
+    <div class="tree-note">Knockout bracket fills in as matches are decided (starts ~June 28)</div>
   </div>`;
-
   container.innerHTML = html;
 }
 
-function renderBracketMatch(m, home, away, isTbd) {
+function renderBracketMatch(m, home, away) {
+  const isTbd = away.team.includes('TBD');
   return `<div class="bracket-match ${isTbd ? 'tbd' : ''}">
     <div class="bm-label">${m.label}</div>
     <div class="bm-team"><span class="bm-name">${home.flag} ${home.team}</span><span class="bm-seed">${m.home}</span></div>
@@ -157,25 +140,20 @@ function renderSchedule(data) {
   const container = document.getElementById('tab-schedule');
   const { matches } = data;
   
-  // Split into live, upcoming, and completed
   const live = matches.filter(m => ['STATUS_IN_PROGRESS', 'STATUS_FIRST_HALF', 'STATUS_SECOND_HALF', 'STATUS_HALFTIME'].includes(m.status));
   const upcoming = matches.filter(m => m.status === 'STATUS_SCHEDULED').slice(0, 20);
   const completed = matches.filter(m => m.status === 'STATUS_FULL_TIME').slice(-10).reverse();
   
   let html = '<div class="schedule-section">';
   
-  // Live matches
   if (live.length > 0) {
-    html += '<h3 class="schedule-heading live-heading">LIVE NOW</h3>';
-    html += '<div class="schedule-matches live-matches">';
+    html += '<h3 class="schedule-heading live-heading">LIVE NOW</h3><div class="schedule-matches live-matches">';
     live.forEach(m => { html += renderMatchCard(m, 'live'); });
     html += '</div>';
   }
   
-  // Upcoming
   if (upcoming.length > 0) {
-    html += '<h3 class="schedule-heading">UPCOMING</h3>';
-    html += '<div class="schedule-matches">';
+    html += '<h3 class="schedule-heading">UPCOMING</h3><div class="schedule-matches">';
     let currentDate = '';
     upcoming.forEach(m => {
       const d = new Date(m.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
@@ -189,10 +167,8 @@ function renderSchedule(data) {
     html += '</div>';
   }
   
-  // Recent results
   if (completed.length > 0) {
-    html += '<h3 class="schedule-heading">RECENT RESULTS</h3>';
-    html += '<div class="schedule-matches">';
+    html += '<h3 class="schedule-heading">RECENT RESULTS</h3><div class="schedule-matches">';
     completed.forEach(m => { html += renderMatchCard(m, 'completed'); });
     html += '</div>';
   }
@@ -207,13 +183,9 @@ function renderMatchCard(m, type) {
   const awayScore = m.away.score ?? '';
   
   let center = '';
-  if (type === 'live') {
-    center = `<span class="match-score live">${homeScore} - ${awayScore}</span>`;
-  } else if (type === 'completed') {
-    center = `<span class="match-score">${homeScore} - ${awayScore}</span>`;
-  } else {
-    center = `<span class="match-time">${time}</span>`;
-  }
+  if (type === 'live') center = `<span class="match-score live">${homeScore} - ${awayScore}</span>`;
+  else if (type === 'completed') center = `<span class="match-score">${homeScore} - ${awayScore}</span>`;
+  else center = `<span class="match-time">${time}</span>`;
   
   const groupBadge = m.group ? `<span class="match-group">Grp ${m.group}</span>` : '';
   
@@ -223,6 +195,127 @@ function renderMatchCard(m, type) {
     <div class="mc-team away ${m.away.winner ? 'winner' : ''}">${m.away.flag} ${m.away.team}</div>
     ${groupBadge}
   </div>`;
+}
+
+// --- Simulator ---
+function renderSimulator(data) {
+  const container = document.getElementById('tab-simulate');
+  if (!data) return;
+  
+  const matches = data.matches.filter(m => m.status === 'STATUS_SCHEDULED' && m.group);
+  const predCount = getPredictionCount();
+  const totalUnplayed = matches.length;
+  
+  // Simulate standings with current predictions
+  const simGroups = simulateStandings(data);
+  const simThirds = getSimulatedThirds(simGroups);
+  const simBracket = getSimulatedBracket(simGroups);
+  
+  let html = `<div class="sim-container">`;
+  
+  // Header
+  html += `<div class="sim-header">
+    <h3>Match Simulator</h3>
+    <p class="sim-desc">Pick results for upcoming group matches. The standings, third-place table, and knockout bracket update instantly.</p>
+    <div class="sim-progress">
+      <div class="sim-progress-bar"><div class="sim-progress-fill" style="width:${totalUnplayed > 0 ? (predCount / totalUnplayed * 100) : 0}%"></div></div>
+      <span class="sim-progress-text">${predCount} of ${totalUnplayed} predicted</span>
+      ${predCount > 0 ? `<button class="sim-reset" id="simReset">Reset All</button>` : ''}
+    </div>
+  </div>`;
+  
+  // Match picker by group
+  html += '<div class="sim-matches">';
+  const groupedMatches = {};
+  matches.forEach(m => {
+    if (!groupedMatches[m.group]) groupedMatches[m.group] = [];
+    groupedMatches[m.group].push(m);
+  });
+  
+  Object.keys(groupedMatches).sort().forEach(g => {
+    html += `<div class="sim-group-section">
+      <div class="sim-group-header">Group ${g}</div>`;
+    groupedMatches[g].forEach(m => {
+      const pred = getPrediction(m.id);
+      const date = new Date(m.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      html += `<div class="sim-match" data-match-id="${m.id}">
+        <div class="sim-match-date">${date}</div>
+        <div class="sim-match-row">
+          <button class="sim-pick ${pred === 'home' ? 'active' : ''}" data-pick="home" data-match="${m.id}">
+            ${m.home.flag} ${m.home.team}
+          </button>
+          <button class="sim-pick draw ${pred === 'draw' ? 'active' : ''}" data-pick="draw" data-match="${m.id}">
+            Draw
+          </button>
+          <button class="sim-pick ${pred === 'away' ? 'active' : ''}" data-pick="away" data-match="${m.id}">
+            ${m.away.team} ${m.away.flag}
+          </button>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  html += '</div>';
+  
+  // Simulated Results Panel (only show if predictions exist)
+  if (predCount > 0) {
+    html += '<div class="sim-results">';
+    
+    // Simulated standings
+    html += '<h4 class="sim-results-title">Simulated Standings</h4>';
+    html += '<div class="sim-standings-grid">';
+    Object.keys(simGroups).sort().forEach(g => {
+      const group = simGroups[g];
+      html += `<div class="sim-group-card"><div class="sim-group-label">Group ${g}</div>`;
+      group.teams.forEach((t, i) => {
+        const cls = i < 2 ? 'sim-qual' : (i === 2 ? 'sim-third' : 'sim-elim');
+        html += `<div class="sim-team-row ${cls}"><span class="sim-pos">${i+1}</span><span class="sim-name">${t.flag} ${t.team}</span><span class="sim-pts">${t.pts}</span></div>`;
+      });
+      html += '</div>';
+    });
+    html += '</div>';
+    
+    // Simulated third place
+    html += '<h4 class="sim-results-title">Simulated 3rd Place</h4>';
+    html += '<div class="sim-thirds">';
+    simThirds.forEach((t, i) => {
+      const status = i < 8 ? 'advance' : 'out';
+      html += `<div class="sim-third-item ${status}"><span class="sim-third-rank">${i+1}</span><span class="sim-third-group">${t.group}</span><span class="sim-third-name">${t.flag} ${t.team}</span><span class="sim-third-pts">${t.pts}pts</span><span class="sim-third-status">${i < 8 ? 'IN' : 'OUT'}</span></div>`;
+    });
+    html += '</div>';
+    
+    // Simulated bracket
+    html += '<h4 class="sim-results-title">Simulated R32 Bracket</h4>';
+    html += '<div class="sim-bracket-grid">';
+    simBracket.forEach(m => {
+      html += `<div class="sim-bracket-match">
+        <div class="sim-bm-label">${m.label}</div>
+        <div class="sim-bm-team">${m.homeTeam.flag} ${m.homeTeam.team}</div>
+        <div class="sim-bm-vs">vs</div>
+        <div class="sim-bm-team">${m.awayTeam.flag} ${m.awayTeam.team}</div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+  
+  html += '</div></div>';
+  container.innerHTML = html;
+  
+  // Attach event listeners
+  container.querySelectorAll('.sim-pick').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const matchId = e.currentTarget.dataset.match;
+      const pick = e.currentTarget.dataset.pick;
+      const current = getPrediction(matchId);
+      // Toggle off if same pick
+      setPrediction(matchId, current === pick ? null : pick);
+    });
+  });
+  
+  const resetBtn = container.querySelector('#simReset');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', clearAllPredictions);
+  }
 }
 
 // --- Tabs ---

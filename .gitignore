@@ -4,3 +4,4 @@ scraper/latest.json
 public/scraper/latest.json
 .DS_Store
 *.log
+.wrangler/
