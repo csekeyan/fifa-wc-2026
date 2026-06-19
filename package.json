@@ -1,0 +1,16 @@
+{
+  "name": "fifa-wc-2026",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5190",
+    "build": "vite build",
+    "preview": "vite preview",
+    "scrape": "python3 scraper/scrape.py --once && cp scraper/latest.json public/scraper/latest.json",
+    "scrape:loop": "python3 scraper/scrape.py"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}

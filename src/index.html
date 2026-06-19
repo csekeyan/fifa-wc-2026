@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIFA World Cup 2026 - Live Bracket Tracker</title>
+<meta name="description" content="Live World Cup 2026 bracket tracker. See group standings, third-place rankings, and the full knockout path from Round of 32 to the Final. Free, fast, no ads.">
+<meta property="og:title" content="FIFA World Cup 2026 - Live Bracket Tracker">
+<meta property="og:description" content="48 teams. 12 groups. Full knockout bracket updated live. See who plays who next.">
+<link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>FIFA World Cup 2026</h1>
+    <p class="subtitle">Live Bracket Tracker</p>
+    <div class="meta-row">
+      <span id="lastUpdated">Loading...</span>
+      <span id="tournamentStatus"></span>
+    </div>
+  </header>
+
+  <div class="summary-bar" id="summaryBar"></div>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab-btn active" data-tab="groups">Groups</button>
+    <button class="tab-btn" data-tab="third">3rd Place</button>
+    <button class="tab-btn" data-tab="bracket">Bracket</button>
+    <button class="tab-btn" data-tab="schedule">Schedule</button>
+  </nav>
+
+  <main>
+    <div class="tab-content active" id="tab-groups"></div>
+    <div class="tab-content" id="tab-third"></div>
+    <div class="tab-content" id="tab-bracket"></div>
+    <div class="tab-content" id="tab-schedule"></div>
+  </main>
+
+  <footer>
+    <p>Built by <a href="https://www.linkedin.com/in/karthikeyangopal/" target="_blank">Karthikeyan Gopal</a> · <a href="https://github.com/csekeyan/fifa-wc-2026" target="_blank">Open Source on GitHub</a></p>
+    <p class="disclaimer">Data refreshes every 30 minutes. Not affiliated with FIFA.</p>
+  </footer>
+</div>
+<script type="module" src="./js/app.js"></script>
+</body>
+</html>

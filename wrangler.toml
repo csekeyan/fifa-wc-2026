@@ -1,0 +1,7 @@
+name = "fifa-wc-2026"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "dist"
+
+[[kv_namespaces]]
+binding = "FIFA_KV"
+id = "TBD"  # Will be created with: wrangler kv namespace create FIFA_KV
