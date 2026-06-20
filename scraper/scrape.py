@@ -117,6 +117,8 @@ def fetch_standings():
                 "pts": int(stats.get("points", 0)),
             })
         
+        # Sort by Pts desc, GD desc, GF desc (FIFA standard)
+        teams.sort(key=lambda t: (-t["pts"], -t["gd"], -t["gf"]))
         groups[group_letter] = {"teams": teams, "city": city}
     
     return groups
