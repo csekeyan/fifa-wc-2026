@@ -7,6 +7,7 @@ import { getData } from './data.js';
 
 const ESPN_SUMMARY = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=';
 const ESPN_ATHLETE = 'https://site.api.espn.com/apis/common/v3/sports/soccer/fifa.world/athletes/';
+const ESPN_OVERVIEW = 'https://site.web.api.espn.com/apis/common/v3/sports/soccer/fifa.world/athletes/';
 
 // Cache fetched details
 const cache = { matches: {}, players: {} };
@@ -328,35 +329,52 @@ export async function openPlayerModal(playerId) {
   const loadingModal = showLoading('Loading player...');
   
   try {
-    const detail = await fetchPlayerDetail(playerId);
+    // Fetch both bio and stats in parallel
+    const [bioData, overviewData] = await Promise.all([
+      fetchPlayerBio(playerId),
+      fetchPlayerOverview(playerId),
+    ]);
     closeModal(loadingModal);
     
-    if (!detail) {
+    if (!bioData && !overviewData) {
       createModal('<p style="text-align:center;color:var(--text-muted)">Player info not available.</p>', 'small');
       return;
     }
     
-    const html = buildPlayerHTML(detail);
-    createModal(html, 'small');
+    const html = buildPlayerHTML(bioData, overviewData);
+    createModal(html, 'large');
   } catch (e) {
     closeModal(loadingModal);
     createModal(`<p style="text-align:center;color:var(--red)">Failed to load player: ${e.message}</p>`, 'small');
   }
 }
 
-async function fetchPlayerDetail(playerId) {
-  if (cache.players[playerId]) return cache.players[playerId];
-  
-  const resp = await fetch(ESPN_ATHLETE + playerId);
-  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-  const data = await resp.json();
-  cache.players[playerId] = data;
-  return data;
+async function fetchPlayerBio(playerId) {
+  const key = 'bio_' + playerId;
+  if (cache.players[key]) return cache.players[key];
+  try {
+    const resp = await fetch(ESPN_ATHLETE + playerId);
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    cache.players[key] = data;
+    return data;
+  } catch { return null; }
 }
 
-function buildPlayerHTML(data) {
-  const p = data.athlete || {};
-  const flag = p.flag?.href || '';
+async function fetchPlayerOverview(playerId) {
+  const key = 'ov_' + playerId;
+  if (cache.players[key]) return cache.players[key];
+  try {
+    const resp = await fetch(ESPN_OVERVIEW + playerId + '/overview');
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    cache.players[key] = data;
+    return data;
+  } catch { return null; }
+}
+
+function buildPlayerHTML(bioData, overviewData) {
+  const p = bioData?.athlete || {};
   const headshot = p.headshot?.href || '';
   
   let html = `<div class="player-modal">
@@ -378,14 +396,81 @@ function buildPlayerHTML(data) {
       </div>
     </div>`;
   
-  // Stats summary if available
-  if (p.statsSummary) {
-    html += '<div class="pm-stats"><h4>Tournament Stats</h4><div class="pm-stats-grid">';
-    const stats = p.statsSummary;
-    if (stats.displayValue) {
-      html += `<div class="pm-stat-item"><span class="pm-stat-val">${stats.displayValue}</span><span class="pm-stat-lbl">Summary</span></div>`;
+  // World Cup tournament stats from overview
+  if (overviewData?.statistics) {
+    const stats = overviewData.statistics;
+    const labels = stats.labels || [];
+    const names = stats.names || [];
+    const displayNames = stats.displayNames || [];
+    
+    // Find WC split
+    const wcSplit = (stats.splits || []).find(s => 
+      s.displayName?.includes('FIFA World Cup')
+    );
+    
+    if (wcSplit && wcSplit.stats) {
+      const values = wcSplit.stats;
+      html += '<div class="pm-stats"><h4>World Cup 2026 Stats</h4><div class="pm-stats-grid">';
+      
+      // Show key stats with nice formatting
+      const keyStats = ['totalGoals', 'goalAssists', 'totalShots', 'shotsOnTarget', 'starts', 'foulsCommitted', 'foulsSuffered', 'yellowCards', 'redCards', 'offsides', 'cleanSheet', 'saves', 'goalsConceded'];
+      const statIcons = { totalGoals: '&#9917;', goalAssists: '&#127942;', totalShots: '&#127919;', shotsOnTarget: '&#9678;', starts: '&#9654;', yellowCards: '&#128993;', redCards: '&#128308;', saves: '&#128588;', cleanSheet: '&#128170;' };
+      
+      names.forEach((name, i) => {
+        if (keyStats.includes(name) && values[i] !== undefined) {
+          const val = values[i];
+          const display = displayNames[i] || name;
+          const icon = statIcons[name] || '';
+          const highlight = (name === 'totalGoals' && parseInt(val) > 0) ? 'highlight' : 
+                           (name === 'goalAssists' && parseInt(val) > 0) ? 'highlight-assist' : '';
+          html += `<div class="pm-stat-item ${highlight}">
+            <span class="pm-stat-val">${val}</span>
+            <span class="pm-stat-lbl">${icon} ${display}</span>
+          </div>`;
+        }
+      });
+      html += '</div></div>';
     }
-    html += '</div></div>';
+    
+    // Club season stats (from other splits)
+    const clubSplit = (stats.splits || []).find(s => 
+      !s.displayName?.includes('FIFA') && !s.displayName?.includes('Friendly') && s.stats
+    );
+    if (clubSplit) {
+      html += `<div class="pm-club-stats"><h4>${clubSplit.displayName} (Club)</h4><div class="pm-stats-grid mini">`;
+      names.forEach((name, i) => {
+        if (['totalGoals', 'goalAssists', 'starts'].includes(name) && clubSplit.stats[i]) {
+          html += `<div class="pm-stat-item"><span class="pm-stat-val">${clubSplit.stats[i]}</span><span class="pm-stat-lbl">${displayNames[i]}</span></div>`;
+        }
+      });
+      html += '</div></div>';
+    }
+  }
+  
+  // Last 5 matches gamelog
+  if (overviewData?.gameLog) {
+    const gl = overviewData.gameLog;
+    const glStats = gl.statistics?.[0];
+    const events = gl.events;
+    
+    if (glStats && events && Object.keys(events).length > 0) {
+      html += '<div class="pm-gamelog"><h4>Recent Matches</h4>';
+      html += '<div class="pm-gl-table"><div class="pm-gl-header">';
+      const glLabels = glStats.labels || [];
+      html += '<span class="pm-gl-match">Match</span>';
+      glLabels.slice(0, 6).forEach(l => { html += `<span class="pm-gl-col">${l}</span>`; });
+      html += '</div>';
+      
+      Object.entries(events).forEach(([eid, ev]) => {
+        const matchName = ev.links?.[0]?.href?.split('/')?. pop()?.replace(/-/g, ' ') || 'Match';
+        const evStats = ev.stats || [];
+        html += '<div class="pm-gl-row">';
+        html += `<span class="pm-gl-match">${matchName}</span>`;
+        evStats.slice(0, 6).forEach(s => { html += `<span class="pm-gl-col">${s}</span>`; });
+        html += '</div>';
+      });
+      html += '</div></div>';
+    }
   }
   
   html += '</div>';

@@ -313,3 +313,28 @@ footer .disclaimer { margin-top: 4px; font-size: 0.65rem; }
   .mm-header { gap: 8px; }
   .mm-score { font-size: 1.4rem; }
 }
+
+/* Enhanced Player Stats */
+.pm-stats { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); }
+.pm-stats h4, .pm-club-stats h4, .pm-gamelog h4 { font-size: 0.72rem; color: var(--gold); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.03em; }
+.pm-stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; }
+.pm-stats-grid.mini { grid-template-columns: repeat(3, 1fr); }
+.pm-stat-item { text-align: center; padding: 10px 6px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; }
+.pm-stat-item.highlight { border-color: var(--green); background: rgba(52,211,153,0.06); }
+.pm-stat-item.highlight-assist { border-color: var(--purple); background: rgba(167,139,250,0.06); }
+.pm-stat-val { display: block; font-size: 1.3rem; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.pm-stat-item.highlight .pm-stat-val { color: var(--green); }
+.pm-stat-item.highlight-assist .pm-stat-val { color: var(--purple); }
+.pm-stat-lbl { display: block; font-size: 0.58rem; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; }
+.pm-club-stats { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+.pm-club-stats h4 { color: var(--text-muted); }
+
+/* Player gamelog */
+.pm-gamelog { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+.pm-gl-table { font-size: 0.68rem; }
+.pm-gl-header { display: grid; grid-template-columns: 1fr repeat(6, 32px); gap: 2px; padding: 6px 4px; border-bottom: 1px solid var(--border); color: var(--text-muted); font-weight: 600; }
+.pm-gl-row { display: grid; grid-template-columns: 1fr repeat(6, 32px); gap: 2px; padding: 6px 4px; border-bottom: 1px solid var(--bg-hover); }
+.pm-gl-row:last-child { border-bottom: none; }
+.pm-gl-match { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: capitalize; }
+.pm-gl-col { text-align: center; font-variant-numeric: tabular-nums; }
+.pm-gl-header .pm-gl-col { font-size: 0.6rem; }
