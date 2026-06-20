@@ -217,6 +217,27 @@ def build_payload(groups, matches, info):
             if home_g and home_g == away_g:
                 match["group"] = home_g
     
+    # Tag knockout matches with their round
+    for match in matches:
+        if match.get("group"):
+            match["round"] = "group"
+            continue
+        home = match["home"]["team"]
+        away = match["away"]["team"]
+        combined = home + " " + away
+        if "Semifinal" in combined or "Semi-final" in combined:
+            match["round"] = "sf"
+        elif "Quarterfinal" in combined or "Quarter" in combined:
+            match["round"] = "qf"
+        elif "Round of 16" in combined:
+            match["round"] = "qf"
+        elif "Round of 32" in combined:
+            match["round"] = "r16"
+        elif "Final" in combined and "Semifinal" not in combined:
+            match["round"] = "final"
+        else:
+            match["round"] = "r32"
+    
     return {
         "groups": groups,
         "matches": matches,

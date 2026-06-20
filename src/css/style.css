@@ -338,3 +338,72 @@ footer .disclaimer { margin-top: 4px; font-size: 0.65rem; }
 .pm-gl-match { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: capitalize; }
 .pm-gl-col { text-align: center; font-variant-numeric: tabular-nums; }
 .pm-gl-header .pm-gl-col { font-size: 0.6rem; }
+
+/* Competition breakdown */
+.pm-competitions { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+.pm-competitions h4 { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+.pm-comp-table { font-size: 0.7rem; }
+.pm-comp-header { display: grid; grid-template-columns: 1fr repeat(5, 36px); gap: 2px; padding: 5px 4px; border-bottom: 1px solid var(--border); color: var(--text-muted); font-weight: 600; font-size: 0.6rem; }
+.pm-comp-row { display: grid; grid-template-columns: 1fr repeat(5, 36px); gap: 2px; padding: 6px 4px; border-bottom: 1px solid var(--bg-hover); }
+.pm-comp-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pm-comp-col { text-align: center; font-variant-numeric: tabular-nums; }
+.pm-comp-col.has-goals { color: var(--green); font-weight: 700; }
+.pm-comp-col.has-assists { color: var(--purple); font-weight: 700; }
+.pm-gl-col.has-goals { color: var(--green); font-weight: 700; }
+
+/* Season total section */
+.pm-stats.season-total { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+.pm-stats.season-total h4 { color: var(--accent); }
+
+/* Career timeline */
+.pm-career { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+.pm-career h4 { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+.pm-career-timeline { display: flex; flex-direction: column; gap: 4px; }
+.pm-career-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: var(--bg-card); border-radius: 6px; font-size: 0.72rem; }
+.pm-career-item.current { border-left: 3px solid var(--green); }
+.pm-career-club { font-weight: 500; }
+.pm-career-years { color: var(--text-muted); font-size: 0.65rem; font-variant-numeric: tabular-nums; }
+
+/* === Full Knockout Bracket === */
+.bracket-full { }
+
+/* Stage navigation */
+.stage-nav { display: flex; gap: 4px; overflow-x: auto; margin-bottom: 16px; padding-bottom: 4px; }
+.stage-btn { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; color: var(--text-secondary); cursor: pointer; font-size: 0.72rem; font-weight: 500; white-space: nowrap; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 80px; }
+.stage-btn:hover:not(.disabled) { background: var(--bg-hover); border-color: var(--accent); }
+.stage-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+.stage-btn.disabled { opacity: 0.3; cursor: not-allowed; }
+.stage-count { font-size: 0.58rem; opacity: 0.7; }
+.stage-panel { display: none; }
+.stage-panel.active { display: block; }
+.stage-empty { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 0.78rem; background: var(--bg-card); border: 1px dashed var(--border); border-radius: 10px; }
+
+/* Knockout match cards */
+.stage-matches { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.ko-match { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; cursor: default; transition: all 0.15s; }
+.ko-match.complete { cursor: pointer; }
+.ko-match.complete:hover { border-color: var(--accent); background: var(--bg-hover); }
+.ko-match.live { border-color: var(--green); box-shadow: 0 0 12px rgba(52,211,153,0.1); }
+.ko-match.tbd { opacity: 0.5; border-style: dashed; }
+.ko-date { font-size: 0.6rem; color: var(--text-muted); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+.ko-badge { font-size: 0.55rem; padding: 1px 5px; border-radius: 3px; background: var(--bg-hover); color: var(--text-muted); }
+.ko-badge.live { background: rgba(52,211,153,0.15); color: var(--green); font-weight: 700; animation: pulse 2s infinite; }
+.ko-badge.done { background: rgba(91,141,239,0.15); color: var(--accent); }
+.ko-team { display: flex; justify-content: space-between; align-items: center; padding: 5px 6px; border-radius: 4px; font-size: 0.78rem; }
+.ko-team.winner { background: rgba(52,211,153,0.08); }
+.ko-name { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ko-team.winner .ko-name { color: var(--green); font-weight: 700; }
+.ko-score { font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; min-width: 16px; text-align: right; }
+
+/* Bracket path visualization */
+.bracket-path { margin-top: 20px; padding: 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; position: relative; }
+.path-stages { display: flex; justify-content: space-between; position: relative; z-index: 1; }
+.path-line { position: absolute; top: 50%; left: 40px; right: 40px; height: 2px; background: var(--border); }
+.path-dot { width: 36px; height: 36px; border-radius: 50%; background: var(--bg-primary); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; color: var(--text-muted); }
+.path-dot.has-data { border-color: var(--accent); color: var(--accent); background: rgba(91,141,239,0.1); }
+
+@media (max-width: 768px) {
+  .stage-nav { gap: 3px; }
+  .stage-btn { padding: 6px 10px; font-size: 0.65rem; min-width: 60px; }
+  .stage-matches { grid-template-columns: 1fr; }
+}

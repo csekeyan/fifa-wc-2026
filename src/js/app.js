@@ -3,7 +3,7 @@ import {
   setPrediction, getPrediction, clearAllPredictions, getPredictionCount,
   setUpdateCallback, simulateStandings, getSimulatedThirds, getSimulatedBracket 
 } from './simulator.js';
-import { attachTeamClickHandlers } from './modals.js';
+import { attachTeamClickHandlers, openMatchModal } from './modals.js';
 
 // --- Init ---
 function init() {
@@ -97,44 +97,109 @@ function renderThirdPlace(data) {
 // --- Bracket ---
 function renderBracket(data) {
   const container = document.getElementById('tab-bracket');
-  const { groups } = data;
+  const { groups, matches } = data;
   
-  function resolveTeam(seed) {
-    if (seed.includes('/')) return { team: 'TBD (3rd)', flag: '' };
-    const group = seed[0];
-    const pos = parseInt(seed[1]) - 1;
-    const team = groups[group]?.teams[pos];
-    return team || { team: 'TBD', flag: '' };
-  }
-
-  let html = `<div class="bracket-section">
-    <div class="bracket-legend"><p>Round of 32 matchups based on current group standings. Third-place slots depend on which groups' 3rd-place teams qualify.</p></div>`;
+  // Get knockout matches by round
+  const r32 = (matches || []).filter(m => m.round === 'r32').sort((a,b) => new Date(a.date) - new Date(b.date));
+  const r16 = (matches || []).filter(m => m.round === 'r16').sort((a,b) => new Date(a.date) - new Date(b.date));
+  const qf = (matches || []).filter(m => m.round === 'qf').sort((a,b) => new Date(a.date) - new Date(b.date));
+  const sf = (matches || []).filter(m => m.round === 'sf').sort((a,b) => new Date(a.date) - new Date(b.date));
+  const final = (matches || []).filter(m => m.round === 'final').sort((a,b) => new Date(a.date) - new Date(b.date));
+  
+  let html = '<div class="bracket-full">';
+  
+  // Stage navigation
+  html += '<div class="stage-nav">';
+  const stages = [
+    { id: 'r32', label: 'Round of 32', count: r32.length, matches: r32 },
+    { id: 'r16', label: 'Round of 16', count: r16.length, matches: r16 },
+    { id: 'qf', label: 'Quarter-Finals', count: qf.length, matches: qf },
+    { id: 'sf', label: 'Semi-Finals', count: sf.length, matches: sf },
+    { id: 'final', label: 'Final', count: final.length, matches: final },
+  ];
+  stages.forEach((s, i) => {
+    const played = s.matches.filter(m => m.status === 'STATUS_FULL_TIME').length;
+    const active = i === 0 ? 'active' : '';
+    const disabled = s.count === 0 ? 'disabled' : '';
+    html += `<button class="stage-btn ${active} ${disabled}" data-stage="${s.id}">${s.label}<span class="stage-count">${played}/${s.count}</span></button>`;
+  });
+  html += '</div>';
+  
+  // Stage content panels
+  stages.forEach((s, i) => {
+    const activeClass = i === 0 ? 'active' : '';
+    html += `<div class="stage-panel ${activeClass}" id="stage-${s.id}">`;
     
-  const leftHalf = R32_BRACKET.slice(0, 8);
-  const rightHalf = R32_BRACKET.slice(8, 16);
+    if (s.count === 0) {
+      html += '<div class="stage-empty">Matches not yet scheduled. Will appear as earlier rounds are completed.</div>';
+    } else {
+      html += '<div class="stage-matches">';
+      s.matches.forEach(m => {
+        html += renderKnockoutMatch(m);
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+  });
   
-  html += '<div class="bracket-halves">';
-  html += '<div class="bracket-half"><h4>Left Bracket</h4><div class="bracket-matches">';
-  leftHalf.forEach(m => { html += renderBracketMatch(m, resolveTeam(m.home), resolveTeam(m.away)); });
-  html += '</div></div>';
-  html += '<div class="bracket-half"><h4>Right Bracket</h4><div class="bracket-matches">';
-  rightHalf.forEach(m => { html += renderBracketMatch(m, resolveTeam(m.home), resolveTeam(m.away)); });
-  html += '</div></div></div>';
-
-  html += `<div class="bracket-tree">
-    <div class="tree-header"><span class="tree-stage">R32</span><span class="tree-stage">R16</span><span class="tree-stage">QF</span><span class="tree-stage">SF</span><span class="tree-stage">Final</span></div>
-    <div class="tree-note">Knockout bracket fills in as matches are decided (starts ~June 28)</div>
+  // Visual bracket path
+  html += `<div class="bracket-path">
+    <div class="path-line"></div>
+    <div class="path-stages">
+      <span class="path-dot ${r32.length > 0 ? 'has-data' : ''}">32</span>
+      <span class="path-dot ${r16.length > 0 ? 'has-data' : ''}">16</span>
+      <span class="path-dot ${qf.length > 0 ? 'has-data' : ''}">8</span>
+      <span class="path-dot ${sf.length > 0 ? 'has-data' : ''}">4</span>
+      <span class="path-dot ${final.length > 0 ? 'has-data' : ''}">F</span>
+    </div>
   </div>`;
+  
+  html += '</div>';
   container.innerHTML = html;
+  
+  // Stage nav click handlers
+  container.querySelectorAll('.stage-btn:not(.disabled)').forEach(btn => {
+    btn.addEventListener('click', () => {
+      container.querySelectorAll('.stage-btn').forEach(b => b.classList.remove('active'));
+      container.querySelectorAll('.stage-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      container.querySelector('#stage-' + btn.dataset.stage)?.classList.add('active');
+    });
+  });
+  
+  // Click completed knockout matches to open detail
+  container.querySelectorAll('.ko-match.complete').forEach(el => {
+    el.addEventListener('click', () => openMatchModal(el.dataset.matchId));
+  });
 }
 
-function renderBracketMatch(m, home, away) {
-  const isTbd = away.team.includes('TBD');
-  return `<div class="bracket-match ${isTbd ? 'tbd' : ''}">
-    <div class="bm-label">${m.label}</div>
-    <div class="bm-team"><span class="bm-name">${home.flag} ${home.team}</span><span class="bm-seed">${m.home}</span></div>
-    <div class="bm-vs">vs</div>
-    <div class="bm-team"><span class="bm-name">${away.flag} ${away.team}</span><span class="bm-seed">${m.away}</span></div>
+function renderKnockoutMatch(m) {
+  const date = new Date(m.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const time = new Date(m.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const isComplete = m.status === 'STATUS_FULL_TIME';
+  const isLive = ['STATUS_IN_PROGRESS','STATUS_FIRST_HALF','STATUS_SECOND_HALF','STATUS_HALFTIME'].includes(m.status);
+  const isTbd = m.home.team.includes('Winner') || m.home.team.includes('Place') || m.away.team.includes('Winner') || m.away.team.includes('Place');
+  
+  let statusBadge = '';
+  if (isLive) statusBadge = '<span class="ko-badge live">LIVE</span>';
+  else if (isComplete) statusBadge = '<span class="ko-badge done">FT</span>';
+  else statusBadge = `<span class="ko-badge">${time}</span>`;
+  
+  const homeClass = isComplete && m.home.winner ? 'winner' : '';
+  const awayClass = isComplete && m.away.winner ? 'winner' : '';
+  const homeScore = isComplete || isLive ? m.home.score : '';
+  const awayScore = isComplete || isLive ? m.away.score : '';
+  
+  return `<div class="ko-match ${isLive ? 'live' : ''} ${isTbd ? 'tbd' : ''} ${isComplete ? 'complete' : ''}" data-match-id="${m.id}">
+    <div class="ko-date">${date} ${statusBadge}</div>
+    <div class="ko-team ${homeClass}">
+      <span class="ko-name">${m.home.flag} ${m.home.team}</span>
+      <span class="ko-score">${homeScore}</span>
+    </div>
+    <div class="ko-team ${awayClass}">
+      <span class="ko-name">${m.away.flag} ${m.away.team}</span>
+      <span class="ko-score">${awayScore}</span>
+    </div>
   </div>`;
 }
 
