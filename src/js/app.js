@@ -3,6 +3,7 @@ import {
   setPrediction, getPrediction, clearAllPredictions, getPredictionCount,
   setUpdateCallback, simulateStandings, getSimulatedThirds, getSimulatedBracket 
 } from './simulator.js';
+import { attachTeamClickHandlers } from './modals.js';
 
 // --- Init ---
 function init() {
@@ -23,6 +24,8 @@ function render(data) {
   renderSchedule(data);
   renderSimulator(data);
   updateMeta(data);
+  // Make all team names clickable for detail popup
+  attachTeamClickHandlers(document.querySelector('main'));
 }
 
 function updateMeta(data) {
