@@ -1,0 +1,8 @@
+name = "fifa-ingest"
+main = "ingest-worker.js"
+compatibility_date = "2024-09-23"
+account_id = "b6a703eceaeda78c83f3d2ec15e51c09"
+
+[[kv_namespaces]]
+binding = "FIFA_KV"
+id = "fce7bde466cb4ae7863ba9abd620ccee"
