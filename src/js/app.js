@@ -41,8 +41,6 @@ function render(data) {
 }
 
 function updateMeta(data) {
-  document.getElementById('lastUpdated').textContent = 
-    `Updated: ${new Date(data.updatedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
   document.getElementById('tournamentStatus').textContent = data.info.phase;
 }
 
