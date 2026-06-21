@@ -1,4 +1,5 @@
 import { subscribe, startPolling, getData, R32_BRACKET } from './data.js';
+import { startLivePolling, renderLiveScoreboard } from './livescore.js';
 import { 
   setPrediction, getPrediction, clearAllPredictions, getPredictionCount,
   setUpdateCallback, simulateStandings, getSimulatedThirds, getSimulatedBracket 
@@ -13,6 +14,17 @@ function init() {
   setUpdateCallback(() => {
     const data = getData();
     if (data) renderSimulator(data);
+  });
+  // Live scoreboard polls ESPN directly every 30s
+  startLivePolling((liveData) => {
+    const container = document.getElementById('tab-live');
+    renderLiveScoreboard(container, liveData);
+    // Highlight tab if live matches exist
+    const liveBtn = document.querySelector('.tab-btn[data-tab="live"]');
+    const hasLive = liveData?.events?.some(e => 
+      ['STATUS_IN_PROGRESS','STATUS_FIRST_HALF','STATUS_SECOND_HALF','STATUS_HALFTIME'].includes(e.competitions[0].status.type.name)
+    );
+    if (liveBtn) liveBtn.classList.toggle('has-live', hasLive);
   });
 }
 

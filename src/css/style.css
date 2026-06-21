@@ -407,3 +407,62 @@ footer .disclaimer { margin-top: 4px; font-size: 0.65rem; }
   .stage-btn { padding: 6px 10px; font-size: 0.65rem; min-width: 60px; }
   .stage-matches { grid-template-columns: 1fr; }
 }
+
+/* === Live Scoreboard === */
+.live-scoreboard { }
+.ls-live-section { margin-bottom: 20px; }
+.ls-live-header { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+.ls-pulse { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: pulse 1.5s infinite; box-shadow: 0 0 8px var(--green); }
+
+/* Live match cards - hero size */
+.ls-live-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+.ls-live-card { background: linear-gradient(135deg, rgba(52,211,153,0.05), rgba(91,141,239,0.05)); border: 1px solid rgba(52,211,153,0.3); border-radius: 12px; padding: 16px; position: relative; overflow: hidden; }
+.ls-live-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--green), var(--accent)); }
+.ls-live-clock { text-align: center; margin-bottom: 12px; }
+.ls-clock-time { display: inline-block; background: var(--green); color: var(--bg-primary); font-size: 1.1rem; font-weight: 800; padding: 4px 12px; border-radius: 6px; font-variant-numeric: tabular-nums; animation: pulse 2s infinite; }
+.ls-clock-period { display: block; font-size: 0.6rem; color: var(--text-muted); margin-top: 3px; }
+
+.ls-live-teams { display: flex; flex-direction: column; gap: 6px; }
+.ls-live-team { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: rgba(0,0,0,0.2); border-radius: 8px; }
+.ls-team-logo { width: 24px; height: 24px; object-fit: contain; }
+.ls-team-name { flex: 1; font-weight: 600; font-size: 0.88rem; }
+.ls-live-score { font-size: 1.5rem; font-weight: 900; color: var(--text-primary); font-variant-numeric: tabular-nums; min-width: 24px; text-align: center; }
+
+/* Goal scorers */
+.ls-scorers { margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 3px; }
+.ls-scorers.compact { flex-direction: row; flex-wrap: wrap; gap: 6px; }
+.ls-scorer-side { display: flex; flex-wrap: wrap; gap: 4px; }
+.ls-scorer-side.away { justify-content: flex-end; }
+.ls-scorer { font-size: 0.65rem; color: var(--text-secondary); background: rgba(52,211,153,0.08); padding: 2px 6px; border-radius: 3px; white-space: nowrap; }
+.ls-venue { font-size: 0.6rem; color: var(--text-muted); margin-top: 8px; text-align: center; }
+
+/* Section titles */
+.ls-section { margin-bottom: 16px; }
+.ls-section-title { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+
+/* Completed + upcoming cards */
+.ls-matches-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.ls-match-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; position: relative; }
+.ls-ft-badge { position: absolute; top: 8px; right: 10px; font-size: 0.55rem; font-weight: 700; color: var(--accent); background: rgba(91,141,239,0.1); padding: 2px 6px; border-radius: 3px; }
+.ls-kickoff { text-align: center; font-size: 0.75rem; color: var(--gold); font-weight: 600; margin-bottom: 8px; }
+.ls-match-teams { display: flex; flex-direction: column; gap: 4px; }
+.ls-match-team { display: flex; align-items: center; gap: 8px; padding: 5px 6px; border-radius: 6px; }
+.ls-match-team.winner { background: rgba(52,211,153,0.06); }
+.ls-match-team.winner .ls-team-name { color: var(--green); }
+.ls-match-score { font-size: 1.1rem; font-weight: 800; color: var(--accent); min-width: 20px; text-align: center; font-variant-numeric: tabular-nums; }
+.ls-match-vs { text-align: center; font-size: 0.65rem; color: var(--text-muted); padding: 2px 0; }
+.ls-empty { text-align: center; padding: 40px; color: var(--text-muted); font-size: 0.8rem; }
+
+/* Refresh indicator */
+.ls-refresh-bar { text-align: center; margin-top: 16px; padding: 8px; font-size: 0.6rem; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 6px; }
+.ls-refresh-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 3s infinite; }
+
+/* Live tab styling */
+.tab-btn[data-tab="live"] { position: relative; }
+.tab-btn[data-tab="live"].has-live { background: rgba(52,211,153,0.1); border-color: var(--green); color: var(--green); }
+.tab-btn[data-tab="live"].has-live::before { content: ''; position: absolute; top: 4px; right: 4px; width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 1.5s infinite; }
+
+@media (max-width: 768px) {
+  .ls-live-grid { grid-template-columns: 1fr; }
+  .ls-matches-grid { grid-template-columns: 1fr; }
+}
