@@ -383,7 +383,12 @@ function renderSimulator(data) {
     html += '<h4 class="sim-results-title">Simulated R32 Bracket</h4>';
     html += '<div class="sim-bracket-grid">';
     simBracket.forEach(m => {
-      html += `<div class="sim-bracket-match"><div class="sim-bm-label">${m.label}</div><div class="sim-bm-team">${m.homeTeam.flag} ${m.homeTeam.team}</div><div class="sim-bm-vs">vs</div><div class="sim-bm-team">${m.awayTeam.flag} ${m.awayTeam.team}</div></div>`;
+      html += `<div class="sim-bracket-match">
+        <div class="sim-bm-label">${m.label}</div>
+        <div class="sim-bm-team"><span class="sim-bm-seed">${m.home}</span>${m.homeTeam.flag} ${m.homeTeam.team}</div>
+        <div class="sim-bm-vs">vs</div>
+        <div class="sim-bm-team"><span class="sim-bm-seed">${m.away.length > 5 ? '3rd' : m.away}</span>${m.awayTeam.flag} ${m.awayTeam.team}</div>
+      </div>`;
     });
     html += '</div></div>';
   }

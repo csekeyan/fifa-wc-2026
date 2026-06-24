@@ -494,3 +494,6 @@ footer .disclaimer { margin-top: 4px; font-size: 0.65rem; }
 .sim-gd { color: var(--text-muted); font-weight: 400; }
 
 /* Auto-switch to simulate tab on shared link */
+
+/* Simulator bracket seeds */
+.sim-bm-seed { display: inline-block; background: rgba(91,141,239,0.1); color: var(--accent); font-size: 0.55rem; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 5px; font-family: monospace; min-width: 20px; text-align: center; }
