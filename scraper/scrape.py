@@ -185,7 +185,7 @@ def compute_tournament_info(groups, matches):
     # Determine phase
     max_played = max(t["p"] for g in groups.values() for t in g["teams"])
     if max_played < 3:
-        phase = f"Group Stage · Matchday {max_played + 1} of 3"
+        phase = "Group Stage"
     else:
         phase = "Knockout Stage"
     
