@@ -153,22 +153,49 @@ export function getSimulatedBracket(simGroups) {
   if (!simGroups) return [];
   const thirds = getSimulatedThirds(simGroups);
   const qualifiedThirds = thirds.slice(0, 8).map(t => t.group);
+  
+  // Track which third-placed teams have been assigned
+  const assigned = new Set();
+  
+  // First pass: identify which matches need a third-placed team
+  const thirdSlots = R32_BRACKET.filter(m => m.away.includes('/'));
+  
+  // Assign third-placed teams to slots (each team used exactly once)
+  // Sort slots by fewest options first (most constrained first) for better matching
+  const slotAssignments = {};
+  const sortedSlots = [...thirdSlots].sort((a, b) => {
+    const aOpts = a.away.split('/').map(s => s[0]).filter(g => qualifiedThirds.includes(g));
+    const bOpts = b.away.split('/').map(s => s[0]).filter(g => qualifiedThirds.includes(g));
+    return aOpts.length - bOpts.length;
+  });
+  
+  for (const slot of sortedSlots) {
+    const options = slot.away.split('/').map(s => s[0]);
+    // Find best available (highest ranked in thirds table) from allowed groups
+    const available = thirds.filter(t => 
+      options.includes(t.group) && qualifiedThirds.includes(t.group) && !assigned.has(t.group)
+    );
+    if (available.length > 0) {
+      slotAssignments[slot.id] = available[0];
+      assigned.add(available[0].group);
+    }
+  }
+  
   return R32_BRACKET.map(m => {
-    const home = resolveTeamFromSim(m.home, simGroups);
-    const away = resolveTeamFromSim(m.away, simGroups, qualifiedThirds);
+    const home = resolveTeamDirect(m.home, simGroups);
+    let away;
+    if (m.away.includes('/')) {
+      const assignedTeam = slotAssignments[m.id];
+      away = assignedTeam || { team: 'TBD (3rd)', flag: '' };
+    } else {
+      away = resolveTeamDirect(m.away, simGroups);
+    }
     return { ...m, homeTeam: home, awayTeam: away };
   });
 }
 
-function resolveTeamFromSim(seed, simGroups, qualifiedThirds) {
-  if (!seed.includes('/')) {
-    const group = seed[0];
-    const pos = parseInt(seed[1]) - 1;
-    return simGroups[group]?.teams[pos] || { team: 'TBD', flag: '' };
-  }
-  if (!qualifiedThirds) return { team: 'TBD (3rd)', flag: '' };
-  const options = seed.split('/').map(s => s[0]);
-  const matched = options.find(g => qualifiedThirds.includes(g));
-  if (matched) return simGroups[matched]?.teams[2] || { team: 'TBD (3rd)', flag: '' };
-  return { team: 'TBD (3rd)', flag: '' };
+function resolveTeamDirect(seed, simGroups) {
+  const group = seed[0];
+  const pos = parseInt(seed[1]) - 1;
+  return simGroups[group]?.teams[pos] || { team: 'TBD', flag: '' };
 }
