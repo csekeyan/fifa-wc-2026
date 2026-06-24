@@ -154,39 +154,41 @@ export function getSimulatedBracket(simGroups) {
   const thirds = getSimulatedThirds(simGroups);
   const qualifiedThirds = thirds.slice(0, 8).map(t => t.group);
   
-  // Track which third-placed teams have been assigned
-  const assigned = new Set();
-  
-  // First pass: identify which matches need a third-placed team
+  // Get third-place slots and their allowed groups
   const thirdSlots = R32_BRACKET.filter(m => m.away.includes('/'));
+  const slotOptions = thirdSlots.map(slot => ({
+    id: slot.id,
+    allowed: slot.away.split('/').map(s => s[0]).filter(g => qualifiedThirds.includes(g))
+  }));
   
-  // Assign third-placed teams to slots (each team used exactly once)
-  // Sort slots by fewest options first (most constrained first) for better matching
-  const slotAssignments = {};
-  const sortedSlots = [...thirdSlots].sort((a, b) => {
-    const aOpts = a.away.split('/').map(s => s[0]).filter(g => qualifiedThirds.includes(g));
-    const bOpts = b.away.split('/').map(s => s[0]).filter(g => qualifiedThirds.includes(g));
-    return aOpts.length - bOpts.length;
-  });
-  
-  for (const slot of sortedSlots) {
-    const options = slot.away.split('/').map(s => s[0]);
-    // Find best available (highest ranked in thirds table) from allowed groups
-    const available = thirds.filter(t => 
-      options.includes(t.group) && qualifiedThirds.includes(t.group) && !assigned.has(t.group)
-    );
-    if (available.length > 0) {
-      slotAssignments[slot.id] = available[0];
-      assigned.add(available[0].group);
+  // Backtracking solver: find valid assignment where each group used exactly once
+  const assignment = {};
+  function solve(idx, used) {
+    if (idx === slotOptions.length) return true;
+    const slot = slotOptions[idx];
+    for (const g of slot.allowed) {
+      if (used.has(g)) continue;
+      used.add(g);
+      assignment[slot.id] = g;
+      if (solve(idx + 1, used)) return true;
+      used.delete(g);
+      delete assignment[slot.id];
     }
+    return false;
   }
+  solve(0, new Set());
   
+  // Build bracket with resolved teams
   return R32_BRACKET.map(m => {
     const home = resolveTeamDirect(m.home, simGroups);
     let away;
     if (m.away.includes('/')) {
-      const assignedTeam = slotAssignments[m.id];
-      away = assignedTeam || { team: 'TBD (3rd)', flag: '' };
+      const assignedGroup = assignment[m.id];
+      if (assignedGroup) {
+        away = simGroups[assignedGroup]?.teams[2] || { team: 'TBD (3rd)', flag: '' };
+      } else {
+        away = { team: 'TBD (3rd)', flag: '' };
+      }
     } else {
       away = resolveTeamDirect(m.away, simGroups);
     }
