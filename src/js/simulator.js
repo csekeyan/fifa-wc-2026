@@ -1,16 +1,20 @@
 /**
- * Simulator Module
- * Users pick results for unplayed matches → standings recalculate → bracket updates live.
- * Predictions stored in localStorage.
+ * Simulator Module v2
+ * Score-based predictions (not just win/draw/away).
+ * Shareable via URL encoding.
  */
 
 import { getData, R32_BRACKET } from './data.js';
 
-const STORAGE_KEY = 'fifa-wc-2026-predictions';
+const STORAGE_KEY = 'fifa-wc-2026-predictions-v2';
 let predictions = loadPredictions();
 let onUpdate = null;
 
+// --- Persistence ---
 function loadPredictions() {
+  // Check URL first (shared link takes priority)
+  const urlPreds = loadFromURL();
+  if (urlPreds) return urlPreds;
   try {
     return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
   } catch { return {}; }
@@ -20,13 +24,27 @@ function savePredictions() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(predictions));
 }
 
-export function setPrediction(matchId, result) {
-  // result: 'home' | 'draw' | 'away' | null (clear)
-  if (result === null) {
+function loadFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const encoded = params.get('sim');
+  if (!encoded) return null;
+  try {
+    const decoded = atob(encoded.replace(/-/g,'+').replace(/_/g,'/'));
+    const preds = JSON.parse(decoded);
+    // Mark as shared view
+    preds._shared = true;
+    return preds;
+  } catch { return null; }
+}
+
+// --- Public API ---
+export function setPrediction(matchId, homeScore, awayScore) {
+  if (homeScore === null || awayScore === null) {
     delete predictions[matchId];
   } else {
-    predictions[matchId] = result;
+    predictions[matchId] = { h: homeScore, a: awayScore };
   }
+  delete predictions._shared; // no longer a shared view once you edit
   savePredictions();
   if (onUpdate) onUpdate();
 }
@@ -38,24 +56,39 @@ export function getPrediction(matchId) {
 export function clearAllPredictions() {
   predictions = {};
   savePredictions();
+  // Clear URL params
+  if (window.location.search.includes('sim=')) {
+    history.replaceState(null, '', window.location.pathname);
+  }
   if (onUpdate) onUpdate();
 }
 
 export function getPredictionCount() {
-  return Object.keys(predictions).length;
+  return Object.keys(predictions).filter(k => k !== '_shared').length;
+}
+
+export function isSharedView() {
+  return predictions._shared === true;
 }
 
 export function setUpdateCallback(fn) {
   onUpdate = fn;
 }
 
-/**
- * Given real data + user predictions, compute simulated standings.
- */
+// --- Share link ---
+export function generateShareLink() {
+  const clean = { ...predictions };
+  delete clean._shared;
+  if (Object.keys(clean).length === 0) return null;
+  const json = JSON.stringify(clean);
+  const encoded = btoa(json).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  return window.location.origin + window.location.pathname + '?sim=' + encoded;
+}
+
+// --- Simulation engine ---
 export function simulateStandings(data) {
   if (!data) return null;
   
-  // Deep clone the real standings
   const groups = {};
   for (const [g, group] of Object.entries(data.groups)) {
     groups[g] = {
@@ -64,7 +97,6 @@ export function simulateStandings(data) {
     };
   }
   
-  // Apply predictions to unplayed matches
   const matches = data.matches || [];
   const unplayed = matches.filter(m => m.status === 'STATUS_SCHEDULED');
   
@@ -79,24 +111,30 @@ export function simulateStandings(data) {
     const awayTeam = group.teams.find(t => t.team === match.away.team);
     if (!homeTeam || !awayTeam) continue;
     
-    // Apply result: simple 1-0 or 0-0 logic
-    if (pred === 'home') {
-      homeTeam.p += 1; homeTeam.w += 1; homeTeam.pts += 3;
-      homeTeam.gf += 1; awayTeam.ga += 1;
-      homeTeam.gd += 1; awayTeam.gd -= 1;
-      awayTeam.p += 1; awayTeam.l += 1;
-    } else if (pred === 'away') {
-      awayTeam.p += 1; awayTeam.w += 1; awayTeam.pts += 3;
-      awayTeam.gf += 1; homeTeam.ga += 1;
-      awayTeam.gd += 1; homeTeam.gd -= 1;
-      homeTeam.p += 1; homeTeam.l += 1;
-    } else if (pred === 'draw') {
-      homeTeam.p += 1; homeTeam.d += 1; homeTeam.pts += 1;
-      awayTeam.p += 1; awayTeam.d += 1; awayTeam.pts += 1;
+    const hGoals = pred.h;
+    const aGoals = pred.a;
+    
+    homeTeam.p += 1;
+    awayTeam.p += 1;
+    homeTeam.gf += hGoals;
+    homeTeam.ga += aGoals;
+    awayTeam.gf += aGoals;
+    awayTeam.ga += hGoals;
+    homeTeam.gd += (hGoals - aGoals);
+    awayTeam.gd += (aGoals - hGoals);
+    
+    if (hGoals > aGoals) {
+      homeTeam.w += 1; homeTeam.pts += 3;
+      awayTeam.l += 1;
+    } else if (aGoals > hGoals) {
+      awayTeam.w += 1; awayTeam.pts += 3;
+      homeTeam.l += 1;
+    } else {
+      homeTeam.d += 1; homeTeam.pts += 1;
+      awayTeam.d += 1; awayTeam.pts += 1;
     }
   }
   
-  // Re-sort each group by pts, gd, gf
   for (const group of Object.values(groups)) {
     group.teams.sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
   }
@@ -104,9 +142,6 @@ export function simulateStandings(data) {
   return groups;
 }
 
-/**
- * Get third-place ranking from simulated standings.
- */
 export function getSimulatedThirds(simGroups) {
   if (!simGroups) return [];
   return Object.keys(simGroups).sort()
@@ -114,15 +149,10 @@ export function getSimulatedThirds(simGroups) {
     .sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
 }
 
-/**
- * Resolve bracket matchups from simulated standings.
- */
 export function getSimulatedBracket(simGroups) {
   if (!simGroups) return [];
-  
   const thirds = getSimulatedThirds(simGroups);
   const qualifiedThirds = thirds.slice(0, 8).map(t => t.group);
-  
   return R32_BRACKET.map(m => {
     const home = resolveTeamFromSim(m.home, simGroups);
     const away = resolveTeamFromSim(m.away, simGroups, qualifiedThirds);
@@ -132,19 +162,13 @@ export function getSimulatedBracket(simGroups) {
 
 function resolveTeamFromSim(seed, simGroups, qualifiedThirds) {
   if (!seed.includes('/')) {
-    // Direct seed like "A1"
     const group = seed[0];
     const pos = parseInt(seed[1]) - 1;
     return simGroups[group]?.teams[pos] || { team: 'TBD', flag: '' };
   }
-  
-  // Third-place slot like "C3/D3/E3"
   if (!qualifiedThirds) return { team: 'TBD (3rd)', flag: '' };
-  
   const options = seed.split('/').map(s => s[0]);
   const matched = options.find(g => qualifiedThirds.includes(g));
-  if (matched) {
-    return simGroups[matched]?.teams[2] || { team: 'TBD (3rd)', flag: '' };
-  }
+  if (matched) return simGroups[matched]?.teams[2] || { team: 'TBD (3rd)', flag: '' };
   return { team: 'TBD (3rd)', flag: '' };
 }

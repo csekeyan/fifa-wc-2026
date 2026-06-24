@@ -466,3 +466,31 @@ footer .disclaimer { margin-top: 4px; font-size: 0.65rem; }
   .ls-live-grid { grid-template-columns: 1fr; }
   .ls-matches-grid { grid-template-columns: 1fr; }
 }
+
+/* === Simulator v2: Score Inputs === */
+.sim-score-row { display: flex; align-items: center; gap: 6px; padding: 8px 0; }
+.sim-team-label { font-size: 0.72rem; font-weight: 500; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sim-team-label.home { text-align: right; }
+.sim-team-label.away { text-align: left; }
+.sim-score-input { display: flex; align-items: center; gap: 2px; }
+.sim-btn { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg-primary); color: var(--text-secondary); font-size: 0.9rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.sim-btn:hover { border-color: var(--purple); color: var(--purple); background: rgba(167,139,250,0.1); }
+.sim-btn:active { transform: scale(0.9); }
+.sim-score-val { min-width: 24px; text-align: center; font-size: 1.1rem; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
+.sim-score-sep { font-size: 1rem; font-weight: 700; color: var(--text-muted); margin: 0 2px; }
+
+/* Actions bar */
+.sim-actions { display: flex; gap: 8px; justify-content: center; margin-top: 10px; }
+.sim-share { font-size: 0.7rem; padding: 6px 14px; background: var(--purple); border: none; color: white; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+.sim-share:hover { background: #9575f0; transform: translateY(-1px); }
+.sim-share.copied { background: var(--green); }
+
+/* Shared banner */
+.sim-shared-banner { background: rgba(167,139,250,0.1); border: 1px solid var(--purple); border-radius: 8px; padding: 10px 16px; text-align: center; font-size: 0.75rem; color: var(--purple); margin-bottom: 16px; }
+.sim-shared-banner button { background: var(--purple); color: white; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.68rem; cursor: pointer; margin-left: 8px; font-weight: 600; }
+
+/* GD in standings */
+.sim-pts-detail { font-weight: 700; color: var(--accent); font-size: 0.65rem; text-align: right; white-space: nowrap; }
+.sim-gd { color: var(--text-muted); font-weight: 400; }
+
+/* Auto-switch to simulate tab on shared link */

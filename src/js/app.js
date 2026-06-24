@@ -2,7 +2,8 @@ import { subscribe, startPolling, getData, R32_BRACKET } from './data.js';
 import { startLivePolling, renderLiveScoreboard } from './livescore.js';
 import { 
   setPrediction, getPrediction, clearAllPredictions, getPredictionCount,
-  setUpdateCallback, simulateStandings, getSimulatedThirds, getSimulatedBracket 
+  setUpdateCallback, simulateStandings, getSimulatedThirds, getSimulatedBracket,
+  generateShareLink, isSharedView
 } from './simulator.js';
 import { attachTeamClickHandlers, openMatchModal } from './modals.js';
 
@@ -15,6 +16,15 @@ function init() {
     const data = getData();
     if (data) renderSimulator(data);
   });
+  // Auto-switch to simulate tab if shared link
+  if (window.location.search.includes('sim=')) {
+    setTimeout(() => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelector('.tab-btn[data-tab="simulate"]')?.classList.add('active');
+      document.getElementById('tab-simulate')?.classList.add('active');
+    }, 100);
+  }
   // Live scoreboard polls ESPN directly every 30s
   startLivePolling((liveData) => {
     const container = document.getElementById('tab-live');
@@ -283,22 +293,30 @@ function renderSimulator(data) {
   const matches = data.matches.filter(m => m.status === 'STATUS_SCHEDULED' && m.group);
   const predCount = getPredictionCount();
   const totalUnplayed = matches.length;
+  const shared = isSharedView();
   
-  // Simulate standings with current predictions
   const simGroups = simulateStandings(data);
   const simThirds = getSimulatedThirds(simGroups);
   const simBracket = getSimulatedBracket(simGroups);
   
-  let html = `<div class="sim-container">`;
+  let html = '<div class="sim-container">';
+  
+  // Shared banner
+  if (shared) {
+    html += '<div class="sim-shared-banner">You\'re viewing someone\'s predictions. <button id="simCopyOwn">Make your own</button></div>';
+  }
   
   // Header
   html += `<div class="sim-header">
     <h3>Match Simulator</h3>
-    <p class="sim-desc">Pick results for upcoming group matches. The standings, third-place table, and knockout bracket update instantly.</p>
+    <p class="sim-desc">Predict scores for upcoming group matches. Goal difference matters for the third-place race.</p>
     <div class="sim-progress">
       <div class="sim-progress-bar"><div class="sim-progress-fill" style="width:${totalUnplayed > 0 ? (predCount / totalUnplayed * 100) : 0}%"></div></div>
       <span class="sim-progress-text">${predCount} of ${totalUnplayed} predicted</span>
-      ${predCount > 0 ? `<button class="sim-reset" id="simReset">Reset All</button>` : ''}
+    </div>
+    <div class="sim-actions">
+      ${predCount > 0 ? '<button class="sim-share" id="simShare">Share Predictions</button>' : ''}
+      ${predCount > 0 ? '<button class="sim-reset" id="simReset">Reset All</button>' : ''}
     </div>
   </div>`;
   
@@ -311,23 +329,26 @@ function renderSimulator(data) {
   });
   
   Object.keys(groupedMatches).sort().forEach(g => {
-    html += `<div class="sim-group-section">
-      <div class="sim-group-header">Group ${g}</div>`;
+    html += `<div class="sim-group-section"><div class="sim-group-header">Group ${g}</div>`;
     groupedMatches[g].forEach(m => {
       const pred = getPrediction(m.id);
-      const date = new Date(m.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const hScore = pred ? pred.h : '';
+      const aScore = pred ? pred.a : '';
       html += `<div class="sim-match" data-match-id="${m.id}">
-        <div class="sim-match-date">${date}</div>
-        <div class="sim-match-row">
-          <button class="sim-pick ${pred === 'home' ? 'active' : ''}" data-pick="home" data-match="${m.id}">
-            ${m.home.flag} ${m.home.team}
-          </button>
-          <button class="sim-pick draw ${pred === 'draw' ? 'active' : ''}" data-pick="draw" data-match="${m.id}">
-            Draw
-          </button>
-          <button class="sim-pick ${pred === 'away' ? 'active' : ''}" data-pick="away" data-match="${m.id}">
-            ${m.away.team} ${m.away.flag}
-          </button>
+        <div class="sim-score-row">
+          <span class="sim-team-label home">${m.home.flag} ${m.home.team}</span>
+          <div class="sim-score-input">
+            <button class="sim-btn minus" data-side="h" data-match="${m.id}">-</button>
+            <span class="sim-score-val" data-side="h" data-match="${m.id}">${hScore !== '' ? hScore : '-'}</span>
+            <button class="sim-btn plus" data-side="h" data-match="${m.id}">+</button>
+          </div>
+          <span class="sim-score-sep">:</span>
+          <div class="sim-score-input">
+            <button class="sim-btn minus" data-side="a" data-match="${m.id}">-</button>
+            <span class="sim-score-val" data-side="a" data-match="${m.id}">${aScore !== '' ? aScore : '-'}</span>
+            <button class="sim-btn plus" data-side="a" data-match="${m.id}">+</button>
+          </div>
+          <span class="sim-team-label away">${m.away.team} ${m.away.flag}</span>
         </div>
       </div>`;
     });
@@ -335,11 +356,9 @@ function renderSimulator(data) {
   });
   html += '</div>';
   
-  // Simulated Results Panel (only show if predictions exist)
+  // Simulated Results
   if (predCount > 0) {
     html += '<div class="sim-results">';
-    
-    // Simulated standings
     html += '<h4 class="sim-results-title">Simulated Standings</h4>';
     html += '<div class="sim-standings-grid">';
     Object.keys(simGroups).sort().forEach(g => {
@@ -347,52 +366,71 @@ function renderSimulator(data) {
       html += `<div class="sim-group-card"><div class="sim-group-label">Group ${g}</div>`;
       group.teams.forEach((t, i) => {
         const cls = i < 2 ? 'sim-qual' : (i === 2 ? 'sim-third' : 'sim-elim');
-        html += `<div class="sim-team-row ${cls}"><span class="sim-pos">${i+1}</span><span class="sim-name">${t.flag} ${t.team}</span><span class="sim-pts">${t.pts}</span></div>`;
+        html += `<div class="sim-team-row ${cls}"><span class="sim-pos">${i+1}</span><span class="sim-name">${t.flag} ${t.team}</span><span class="sim-pts-detail">${t.pts}pts <span class="sim-gd">${t.gd > 0 ? '+' : ''}${t.gd}</span></span></div>`;
       });
       html += '</div>';
     });
     html += '</div>';
     
-    // Simulated third place
-    html += '<h4 class="sim-results-title">Simulated 3rd Place</h4>';
+    html += '<h4 class="sim-results-title">Third Place Race</h4>';
     html += '<div class="sim-thirds">';
     simThirds.forEach((t, i) => {
       const status = i < 8 ? 'advance' : 'out';
-      html += `<div class="sim-third-item ${status}"><span class="sim-third-rank">${i+1}</span><span class="sim-third-group">${t.group}</span><span class="sim-third-name">${t.flag} ${t.team}</span><span class="sim-third-pts">${t.pts}pts</span><span class="sim-third-status">${i < 8 ? 'IN' : 'OUT'}</span></div>`;
+      html += `<div class="sim-third-item ${status}"><span class="sim-third-rank">${i+1}</span><span class="sim-third-group">${t.group}</span><span class="sim-third-name">${t.flag} ${t.team}</span><span class="sim-third-pts">${t.pts}pts GD${t.gd > 0 ? '+' : ''}${t.gd}</span><span class="sim-third-status">${i < 8 ? 'IN' : 'OUT'}</span></div>`;
     });
     html += '</div>';
     
-    // Simulated bracket
     html += '<h4 class="sim-results-title">Simulated R32 Bracket</h4>';
     html += '<div class="sim-bracket-grid">';
     simBracket.forEach(m => {
-      html += `<div class="sim-bracket-match">
-        <div class="sim-bm-label">${m.label}</div>
-        <div class="sim-bm-team">${m.homeTeam.flag} ${m.homeTeam.team}</div>
-        <div class="sim-bm-vs">vs</div>
-        <div class="sim-bm-team">${m.awayTeam.flag} ${m.awayTeam.team}</div>
-      </div>`;
+      html += `<div class="sim-bracket-match"><div class="sim-bm-label">${m.label}</div><div class="sim-bm-team">${m.homeTeam.flag} ${m.homeTeam.team}</div><div class="sim-bm-vs">vs</div><div class="sim-bm-team">${m.awayTeam.flag} ${m.awayTeam.team}</div></div>`;
     });
-    html += '</div>';
+    html += '</div></div>';
   }
   
-  html += '</div></div>';
+  html += '</div>';
   container.innerHTML = html;
   
-  // Attach event listeners
-  container.querySelectorAll('.sim-pick').forEach(btn => {
+  // Event listeners
+  container.querySelectorAll('.sim-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const matchId = e.currentTarget.dataset.match;
-      const pick = e.currentTarget.dataset.pick;
-      const current = getPrediction(matchId);
-      // Toggle off if same pick
-      setPrediction(matchId, current === pick ? null : pick);
+      const side = e.currentTarget.dataset.side;
+      const isPlus = e.currentTarget.classList.contains('plus');
+      const pred = getPrediction(matchId) || { h: 0, a: 0 };
+      let val = side === 'h' ? pred.h : pred.a;
+      val = isPlus ? Math.min(val + 1, 9) : Math.max(val - 1, 0);
+      const newH = side === 'h' ? val : pred.h;
+      const newA = side === 'a' ? val : pred.a;
+      setPrediction(matchId, newH, newA);
     });
   });
   
   const resetBtn = container.querySelector('#simReset');
-  if (resetBtn) {
-    resetBtn.addEventListener('click', clearAllPredictions);
+  if (resetBtn) resetBtn.addEventListener('click', clearAllPredictions);
+  
+  const shareBtn = container.querySelector('#simShare');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', () => {
+      const link = generateShareLink();
+      if (link) {
+        navigator.clipboard.writeText(link).then(() => {
+          shareBtn.textContent = 'Copied!';
+          shareBtn.classList.add('copied');
+          setTimeout(() => { shareBtn.textContent = 'Share Predictions'; shareBtn.classList.remove('copied'); }, 2000);
+        }).catch(() => {
+          prompt('Copy this link:', link);
+        });
+      }
+    });
+  }
+  
+  const copyOwnBtn = container.querySelector('#simCopyOwn');
+  if (copyOwnBtn) {
+    copyOwnBtn.addEventListener('click', () => {
+      history.replaceState(null, '', window.location.pathname);
+      clearAllPredictions();
+    });
   }
 }
 
