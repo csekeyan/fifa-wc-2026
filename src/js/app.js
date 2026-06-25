@@ -6,6 +6,7 @@ import {
   generateShareLink, isSharedView
 } from './simulator.js';
 import { attachTeamClickHandlers, openMatchModal } from './modals.js';
+import { renderBracketTree } from './bracketTree.js';
 
 // --- Init ---
 function init() {
@@ -119,6 +120,15 @@ function renderBracket(data) {
   const container = document.getElementById('tab-bracket');
   const { groups, matches } = data;
   
+  // View toggle: Cards vs Tree
+  let html = '<div class="bracket-view-toggle">';
+  html += '<button class="bv-btn active" data-view="cards">Cards</button>';
+  html += '<button class="bv-btn" data-view="tree">Bracket Tree</button>';
+  html += '</div>';
+
+  // === CARDS VIEW (existing) ===
+  html += '<div class="bracket-cards-view active">';
+  
   // Get knockout matches by round
   const r32 = (matches || []).filter(m => m.round === 'r32').sort((a,b) => new Date(a.date) - new Date(b.date));
   const r16 = (matches || []).filter(m => m.round === 'r16').sort((a,b) => new Date(a.date) - new Date(b.date));
@@ -126,7 +136,7 @@ function renderBracket(data) {
   const sf = (matches || []).filter(m => m.round === 'sf').sort((a,b) => new Date(a.date) - new Date(b.date));
   const final = (matches || []).filter(m => m.round === 'final').sort((a,b) => new Date(a.date) - new Date(b.date));
   
-  let html = '<div class="bracket-full">';
+  html += '<div class="bracket-full">';
   
   // Stage navigation
   html += '<div class="stage-nav">';
@@ -174,10 +184,28 @@ function renderBracket(data) {
     </div>
   </div>`;
   
+  html += '</div>'; // bracket-full
+  html += '</div>'; // bracket-cards-view
+
+  // === TREE VIEW (new traditional bracket) ===
+  html += '<div class="bracket-tree-view">';
+  html += renderBracketTree(data);
   html += '</div>';
+
   container.innerHTML = html;
   
-  // Stage nav click handlers
+  // View toggle handlers
+  container.querySelectorAll('.bv-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      container.querySelectorAll('.bv-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const view = btn.dataset.view;
+      container.querySelector('.bracket-cards-view').classList.toggle('active', view === 'cards');
+      container.querySelector('.bracket-tree-view').classList.toggle('active', view === 'tree');
+    });
+  });
+
+  // Stage nav click handlers (cards view)
   container.querySelectorAll('.stage-btn:not(.disabled)').forEach(btn => {
     btn.addEventListener('click', () => {
       container.querySelectorAll('.stage-btn').forEach(b => b.classList.remove('active'));
