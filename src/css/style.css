@@ -389,11 +389,11 @@ footer .disclaimer { margin-top: 4px; font-size: 0.65rem; }
 
 /* Knockout match cards */
 .stage-matches { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
-.ko-match { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; cursor: default; transition: all 0.15s; backdrop-filter: var(--glass-blur); }
+.ko-match { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 12px 14px; cursor: default; transition: all 0.15s; }
 .ko-match.complete { cursor: pointer; }
-.ko-match.complete:hover { border-color: rgba(91,141,239,0.4); background: rgba(255,255,255,0.05); }
-.ko-match.live { border-color: rgba(52,211,153,0.4); box-shadow: 0 0 16px rgba(52,211,153,0.1); }
-.ko-match.tbd { opacity: 0.5; border-style: dashed; }
+.ko-match.complete:hover { border-color: rgba(91,141,239,0.5); background: rgba(255,255,255,0.07); }
+.ko-match.live { border-color: rgba(52,211,153,0.5); box-shadow: 0 0 16px rgba(52,211,153,0.15); }
+.ko-match.tbd { opacity: 0.6; border-style: dashed; }
 .ko-date { font-size: 0.7rem; color: var(--text-primary); opacity: 0.8; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; font-weight: 500; }
 .ko-badge { font-size: 0.62rem; padding: 3px 9px; border-radius: 10px; background: rgba(91,141,239,0.2); color: var(--accent-light); font-weight: 600; }
 .ko-badge.live { background: rgba(52,211,153,0.15); color: var(--green); font-weight: 700; animation: pulse 2s infinite; }
@@ -521,69 +521,73 @@ footer .disclaimer { margin-top: 4px; font-size: 0.65rem; }
 .bracket-cards-view.active, .bracket-tree-view.active { display: block; }
 
 /* Main tree container: left + center + right */
-.tree-container { display: flex; align-items: stretch; min-width: 1100px; padding: 8px 0; }
+.tree-container { display: flex; align-items: stretch; min-width: 0; padding: 4px 0; }
 
 /* Each half */
 .tree-half { display: flex; flex: 1; }
 .tree-half.right { flex-direction: row; }
 
 /* Each column of matches */
-.tree-col { display: flex; flex-direction: column; justify-content: space-around; padding: 2px 0; min-width: 120px; }
-.tree-col-r32 { min-width: 130px; gap: 4px; }
-.tree-col-r16 { min-width: 130px; }
-.tree-col-qf { min-width: 130px; }
-.tree-col-sf { min-width: 130px; }
+.tree-col { display: flex; flex-direction: column; justify-content: space-around; padding: 1px 0; min-width: 0; flex: 1; }
+.tree-col-r32 { gap: 2px; }
+.tree-col-r16 { }
+.tree-col-qf { }
+.tree-col-sf { }
 
 /* Connector columns between rounds */
-.tree-connectors { width: 20px; position: relative; display: flex; flex-direction: column; justify-content: space-around; }
-.tree-connectors::before { content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: rgba(147,180,245,0.12); }
+.tree-connectors { width: 10px; position: relative; display: flex; flex-direction: column; justify-content: space-around; flex-shrink: 0; }
+.tree-connectors::before { content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: rgba(147,180,245,0.2); }
 
 /* Match card in tree */
-.tree-match { position: relative; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 4px 8px; backdrop-filter: var(--glass-blur); transition: all 0.15s; margin: 2px 0; }
+.tree-match { position: relative; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; padding: 2px 5px; transition: all 0.15s; margin: 1px 0; }
 
 /* Horizontal connector lines from matches */
 .tree-half.left .tree-col:not(:last-child) .tree-match::after {
   content: '';
   position: absolute;
-  right: -21px;
+  right: -11px;
   top: 50%;
-  width: 20px;
+  width: 10px;
   height: 1px;
-  background: rgba(147,180,245,0.2);
+  background: rgba(147,180,245,0.3);
 }
 .tree-half.right .tree-col:not(:first-child) .tree-match::after {
   content: '';
   position: absolute;
-  left: -21px;
+  left: -11px;
   top: 50%;
-  width: 20px;
+  width: 10px;
   height: 1px;
-  background: rgba(147,180,245,0.2);
+  background: rgba(147,180,245,0.3);
 }
-.tree-match.live { border-color: rgba(52,211,153,0.4); box-shadow: 0 0 8px rgba(52,211,153,0.1); }
-.tree-match.complete { border-color: rgba(91,141,239,0.2); }
-.tree-match.complete:hover { border-color: rgba(91,141,239,0.4); background: rgba(255,255,255,0.05); cursor: pointer; }
-.tree-match.tbd { opacity: 0.4; border-style: dashed; }
-.tree-match.final-match { padding: 10px 14px; border-radius: 12px; background: rgba(245,158,11,0.05); border-color: rgba(245,158,11,0.3); }
-.tree-match.final-match .tree-name { max-width: 100px; font-size: 0.75rem; }
+.tree-match.live { border-color: rgba(52,211,153,0.5); box-shadow: 0 0 8px rgba(52,211,153,0.15); }
+.tree-match.complete { border-color: rgba(91,141,239,0.35); }
+.tree-match.complete:hover { border-color: rgba(91,141,239,0.5); background: rgba(255,255,255,0.07); cursor: pointer; }
+.tree-match.tbd { opacity: 0.55; border-style: dashed; }
+.tree-match.final-match { padding: 6px 10px; border-radius: 8px; background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.4); }
+.tree-match.final-match .tree-name { max-width: 90px; font-size: 0.72rem; }
 
 /* Team row inside tree match */
-.tree-team { display: flex; align-items: center; gap: 4px; padding: 3px 4px; border-radius: 4px; font-size: 0.68rem; font-weight: 500; color: var(--text-primary); }
-.tree-team + .tree-team { border-top: 1px solid rgba(255,255,255,0.04); }
-.tree-team.winner { background: rgba(52,211,153,0.08); }
+.tree-team { display: flex; align-items: center; gap: 3px; padding: 2px 3px; border-radius: 3px; font-size: 0.65rem; font-weight: 500; color: var(--text-primary); }
+.tree-team + .tree-team { border-top: 1px solid rgba(255,255,255,0.06); }
+.tree-team.winner { background: rgba(52,211,153,0.1); }
 .tree-team.winner .tree-name { color: var(--green-bright); font-weight: 700; }
-.tree-flag { font-size: 0.72rem; flex-shrink: 0; }
-.tree-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 85px; }
-.tree-score { font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums; min-width: 14px; text-align: right; font-size: 0.78rem; }
+.tree-flag { font-size: 0.65rem; flex-shrink: 0; }
+.tree-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 75px; }
+.tree-score { font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums; min-width: 12px; text-align: right; font-size: 0.72rem; }
 .tree-team:not(.winner) .tree-score { color: var(--text-secondary); }
 
 /* Center / Final */
-.tree-center { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 16px; min-width: 140px; }
-.tree-trophy { font-size: 2rem; margin-top: 8px; }
-.tree-connector-final { flex: 1; width: 1px; background: rgba(245,158,11,0.2); }
+.tree-center { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 8px; min-width: 100px; }
+.tree-trophy { font-size: 1.5rem; margin-top: 6px; }
+.tree-connector-final { flex: 1; width: 1px; background: rgba(245,158,11,0.3); }
 
 /* Mobile */
 @media (max-width: 768px) {
   .tree-scroll-hint { display: block; }
-  .tree-container { min-width: 1000px; }
+  .tree-bracket { overflow-x: auto; }
+  .tree-container { min-width: 700px; }
+}
+@media (min-width: 769px) {
+  .tree-bracket { overflow: hidden; }
 }
