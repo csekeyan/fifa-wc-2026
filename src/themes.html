@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIFA WC 2026 - Theme Preview</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #0a0e17; color: #e8edf5; min-height: 100vh; }
+
+/* Theme Switcher */
+.theme-bar { position: sticky; top: 0; z-index: 100; background: rgba(10,14,23,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid #1e2a3a; padding: 12px 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.theme-bar h2 { font-size: 0.85rem; color: #8896a8; margin-right: 8px; }
+.theme-btn { padding: 8px 16px; border-radius: 8px; border: 2px solid #1e2a3a; background: #141b27; color: #8896a8; cursor: pointer; font-size: 0.75rem; font-weight: 600; transition: all 0.2s; }
+.theme-btn:hover { border-color: #5b8def; }
+.theme-btn.active { border-color: #5b8def; background: rgba(91,141,239,0.15); color: #5b8def; }
+
+.preview { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+.section { margin-bottom: 32px; }
+.section-title { font-size: 0.7rem; color: #4a5568; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid #1e2a3a; }
+
+/* ========== THEME A: Current (Dark Minimal) ========== */
+.theme-a .ko-match { background: #141b27; border: 1px solid #1e2a3a; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+.theme-a .ko-date { font-size: 0.6rem; color: #4a5568; margin-bottom: 6px; }
+.theme-a .ko-badge { font-size: 0.55rem; padding: 1px 5px; border-radius: 3px; background: #1a2332; color: #4a5568; margin-left: 6px; }
+.theme-a .ko-team { display: flex; justify-content: space-between; align-items: center; padding: 5px 6px; border-radius: 4px; font-size: 0.78rem; }
+.theme-a .ko-team.winner { background: rgba(52,211,153,0.08); }
+.theme-a .ko-team.winner .ko-name { color: #34d399; font-weight: 700; }
+.theme-a .ko-score { font-weight: 700; color: #5b8def; }
+
+/* ========== THEME B: Glassmorphism ========== */
+.theme-b .ko-match { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; backdrop-filter: blur(8px); }
+.theme-b .ko-date { font-size: 0.65rem; color: #a0aec0; margin-bottom: 6px; font-weight: 500; }
+.theme-b .ko-badge { font-size: 0.58rem; padding: 2px 8px; border-radius: 10px; background: rgba(91,141,239,0.2); color: #93b4f5; margin-left: 8px; }
+.theme-b .ko-team { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-radius: 8px; font-size: 0.82rem; margin-bottom: 2px; }
+.theme-b .ko-team.winner { background: linear-gradient(135deg, rgba(52,211,153,0.1), rgba(52,211,153,0.03)); border-left: 3px solid #34d399; }
+.theme-b .ko-team.winner .ko-name { color: #5ee8b5; font-weight: 700; }
+.theme-b .ko-score { font-size: 1.1rem; font-weight: 800; color: #e8edf5; }
+.theme-b .ko-team:not(.winner) .ko-score { color: #4a5568; }
+
+/* ========== THEME C: Bold Cards ========== */
+.theme-c .ko-match { background: linear-gradient(145deg, #1a2233, #141b27); border: 1px solid #2a3548; border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+.theme-c .ko-date { font-size: 0.68rem; color: #f59e0b; margin-bottom: 8px; font-weight: 600; }
+.theme-c .ko-badge { font-size: 0.6rem; padding: 3px 10px; border-radius: 4px; background: #f59e0b; color: #0a0e17; font-weight: 700; margin-left: 8px; }
+.theme-c .ko-team { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-radius: 10px; font-size: 0.85rem; font-weight: 500; margin-bottom: 4px; background: rgba(0,0,0,0.25); }
+.theme-c .ko-team.winner { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.3); }
+.theme-c .ko-team.winner .ko-name { color: #34d399; font-weight: 800; }
+.theme-c .ko-score { font-size: 1.3rem; font-weight: 900; color: #fff; text-shadow: 0 0 8px rgba(91,141,239,0.5); }
+
+/* ========== Group Standings Themes ========== */
+.groups-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+
+/* Theme A: Current */
+.theme-a .group-card { background: #141b27; border: 1px solid #1e2a3a; border-radius: 10px; padding: 12px; }
+.theme-a .group-card h3 { font-size: 0.78rem; color: #5b8def; margin-bottom: 8px; text-transform: uppercase; }
+.theme-a .standings-table { width: 100%; font-size: 0.73rem; border-collapse: collapse; }
+.theme-a .standings-table th { color: #4a5568; font-size: 0.6rem; text-align: left; padding: 4px 5px; border-bottom: 1px solid #1e2a3a; }
+.theme-a .standings-table td { padding: 6px 5px; border-bottom: 1px solid #1a2332; }
+.theme-a .standings-table .pts { font-weight: 700; color: #5b8def; }
+.theme-a .qual { background: rgba(52,211,153,0.05); }
+
+/* Theme B: Glass */
+.theme-b .group-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 14px; backdrop-filter: blur(8px); }
+.theme-b .group-card h3 { font-size: 0.82rem; color: #93b4f5; margin-bottom: 10px; font-weight: 700; }
+.theme-b .standings-table { width: 100%; font-size: 0.75rem; border-collapse: separate; border-spacing: 0 3px; }
+.theme-b .standings-table th { color: #607080; font-size: 0.6rem; text-align: left; padding: 4px 8px; }
+.theme-b .standings-table td { padding: 8px; }
+.theme-b .standings-table tr { background: rgba(0,0,0,0.2); border-radius: 6px; }
+.theme-b .standings-table .pts { font-weight: 800; color: #e8edf5; font-size: 0.85rem; }
+.theme-b .qual { background: rgba(52,211,153,0.06); border-left: 3px solid rgba(52,211,153,0.4); }
+
+/* Theme C: Bold */
+.theme-c .group-card { background: linear-gradient(145deg, #1a2233, #0f1520); border: 1px solid #2a3548; border-radius: 16px; padding: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+.theme-c .group-card h3 { font-size: 0.85rem; color: #f59e0b; margin-bottom: 10px; font-weight: 800; letter-spacing: 0.03em; }
+.theme-c .standings-table { width: 100%; font-size: 0.75rem; border-collapse: separate; border-spacing: 0 4px; }
+.theme-c .standings-table th { color: #607080; font-size: 0.6rem; text-transform: uppercase; text-align: left; padding: 4px 8px; }
+.theme-c .standings-table td { padding: 10px 8px; background: rgba(0,0,0,0.3); }
+.theme-c .standings-table tr td:first-child { border-radius: 8px 0 0 8px; }
+.theme-c .standings-table tr td:last-child { border-radius: 0 8px 8px 0; }
+.theme-c .standings-table .pts { font-weight: 900; color: #f59e0b; font-size: 0.9rem; }
+.theme-c .qual td { border-bottom: 2px solid rgba(52,211,153,0.4); }
+
+/* ========== Live Score Themes ========== */
+/* Theme A */
+.theme-a .live-card { background: #141b27; border: 1px solid rgba(52,211,153,0.3); border-radius: 10px; padding: 14px; }
+.theme-a .live-clock { text-align: center; background: #34d399; color: #0a0e17; padding: 4px 12px; border-radius: 6px; font-weight: 800; display: inline-block; margin-bottom: 10px; }
+.theme-a .live-teams { display: flex; flex-direction: column; gap: 6px; }
+.theme-a .live-team { display: flex; justify-content: space-between; padding: 6px 8px; font-size: 0.82rem; }
+.theme-a .live-score-num { font-size: 1.4rem; font-weight: 900; color: #e8edf5; }
+
+/* Theme B */
+.theme-b .live-card { background: rgba(52,211,153,0.03); border: 1px solid rgba(52,211,153,0.15); border-radius: 14px; padding: 16px; position: relative; overflow: hidden; }
+.theme-b .live-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #34d399, #5b8def); }
+.theme-b .live-clock { text-align: center; color: #34d399; font-size: 1.2rem; font-weight: 800; margin-bottom: 12px; animation: blink 1.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.5} }
+.theme-b .live-teams { display: flex; flex-direction: column; gap: 8px; }
+.theme-b .live-team { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: rgba(0,0,0,0.3); border-radius: 10px; font-size: 0.85rem; }
+.theme-b .live-score-num { font-size: 1.6rem; font-weight: 900; color: #fff; }
+
+/* Theme C */
+.theme-c .live-card { background: linear-gradient(135deg, rgba(52,211,153,0.08), rgba(91,141,239,0.05)); border: 2px solid rgba(52,211,153,0.3); border-radius: 16px; padding: 18px; box-shadow: 0 0 24px rgba(52,211,153,0.08); }
+.theme-c .live-clock { text-align: center; font-size: 1.5rem; font-weight: 900; color: #34d399; margin-bottom: 14px; text-shadow: 0 0 12px rgba(52,211,153,0.5); }
+.theme-c .live-teams { display: flex; flex-direction: column; gap: 6px; }
+.theme-c .live-team { display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 12px 14px; background: rgba(0,0,0,0.4); border-radius: 12px; font-size: 0.9rem; font-weight: 600; }
+.theme-c .live-score-num { font-size: 2rem; font-weight: 900; color: #fff; text-shadow: 0 0 10px rgba(245,158,11,0.5); }
+
+/* ========== Simulator Themes ========== */
+/* Theme A */
+.theme-a .sim-row { display: flex; align-items: center; gap: 6px; padding: 8px 0; font-size: 0.75rem; }
+.theme-a .sim-team { flex: 1; }
+.theme-a .sim-team.right { text-align: right; }
+.theme-a .sim-score-box { width: 28px; height: 28px; background: #0a0e17; border: 1px solid #1e2a3a; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #5b8def; }
+.theme-a .sim-colon { color: #4a5568; margin: 0 2px; }
+
+/* Theme B */
+.theme-b .sim-row { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: rgba(0,0,0,0.2); border-radius: 10px; margin-bottom: 6px; font-size: 0.78rem; }
+.theme-b .sim-team { flex: 1; font-weight: 500; }
+.theme-b .sim-team.right { text-align: right; }
+.theme-b .sim-score-box { width: 32px; height: 32px; background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.3); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; color: #a78bfa; }
+.theme-b .sim-colon { color: #607080; font-size: 1.1rem; font-weight: 700; }
+
+/* Theme C */
+.theme-c .sim-row { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: rgba(0,0,0,0.3); border-radius: 12px; margin-bottom: 8px; font-size: 0.82rem; border: 1px solid #2a3548; }
+.theme-c .sim-team { flex: 1; font-weight: 600; }
+.theme-c .sim-team.right { text-align: right; }
+.theme-c .sim-score-box { width: 36px; height: 36px; background: #0a0e17; border: 2px solid #f59e0b; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.1rem; color: #f59e0b; box-shadow: 0 0 8px rgba(245,158,11,0.2); }
+.theme-c .sim-colon { color: #f59e0b; font-size: 1.2rem; font-weight: 900; }
+
+.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="theme-bar">
+  <h2>Theme:</h2>
+  <button class="theme-btn active" onclick="setTheme('a')">A: Dark Minimal (current)</button>
+  <button class="theme-btn" onclick="setTheme('b')">B: Glassmorphism</button>
+  <button class="theme-btn" onclick="setTheme('c')">C: Bold Cards</button>
+</div>
+
+<div class="preview" id="preview">
+
+<!-- LIVE SCORES -->
+<div class="section">
+  <div class="section-title">Live Scores</div>
+  <div class="theme-a" id="live-a">
+    <div class="live-card">
+      <div style="text-align:center"><span class="live-clock">72'</span></div>
+      <div class="live-teams">
+        <div class="live-team"><span>🇪🇸 Spain</span><span class="live-score-num">5</span></div>
+        <div class="live-team"><span>🇸🇦 Saudi Arabia</span><span class="live-score-num">0</span></div>
+      </div>
+      <div style="font-size:0.6rem;color:#4a5568;margin-top:8px;text-align:center">Lamine Yamal 10', Oyarzabal 21', 24', Pedri 55', Nico Williams 68'</div>
+    </div>
+  </div>
+  <div class="theme-b hidden" id="live-b">
+    <div class="live-card">
+      <div class="live-clock">72'</div>
+      <div class="live-teams">
+        <div class="live-team"><span>🇪🇸 Spain</span><span class="live-score-num">5</span></div>
+        <div class="live-team"><span>🇸🇦 Saudi Arabia</span><span class="live-score-num">0</span></div>
+      </div>
+      <div style="font-size:0.63rem;color:#8896a8;margin-top:10px;text-align:center">Lamine Yamal 10', Oyarzabal 21', 24', Pedri 55', Nico Williams 68'</div>
+    </div>
+  </div>
+  <div class="theme-c hidden" id="live-c">
+    <div class="live-card">
+      <div class="live-clock">72'</div>
+      <div class="live-teams">
+        <div class="live-team"><span>🇪🇸 Spain</span><span class="live-score-num">5</span></div>
+        <div class="live-team"><span>🇸🇦 Saudi Arabia</span><span class="live-score-num">0</span></div>
+      </div>
+      <div style="font-size:0.65rem;color:#a0aec0;margin-top:12px;text-align:center">Lamine Yamal 10', Oyarzabal 21', 24', Pedri 55', Nico Williams 68'</div>
+    </div>
+  </div>
+</div>
+
+<!-- BRACKET -->
+<div class="section">
+  <div class="section-title">Knockout Bracket</div>
+  <div class="theme-a" id="bracket-a">
+    <div class="ko-match"><div class="ko-date">Jun 28<span class="ko-badge">FT</span></div><div class="ko-team winner"><span class="ko-name">🇰🇷 South Korea</span><span class="ko-score">2</span></div><div class="ko-team"><span class="ko-name">🇨🇭 Switzerland</span><span class="ko-score">1</span></div></div>
+    <div class="ko-match"><div class="ko-date">Jun 29<span class="ko-badge">12:00 PM</span></div><div class="ko-team"><span class="ko-name">🇧🇷 Brazil</span><span class="ko-score"></span></div><div class="ko-team"><span class="ko-name">🇳🇱 Netherlands</span><span class="ko-score"></span></div></div>
+    <div class="ko-match"><div class="ko-date">Jun 29<span class="ko-badge">6:00 PM</span></div><div class="ko-team"><span class="ko-name">🇩🇪 Germany</span><span class="ko-score"></span></div><div class="ko-team"><span class="ko-name">🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scotland (3rd)</span><span class="ko-score"></span></div></div>
+  </div>
+  <div class="theme-b hidden" id="bracket-b">
+    <div class="ko-match"><div class="ko-date">Jun 28<span class="ko-badge">FT</span></div><div class="ko-team winner"><span class="ko-name">🇰🇷 South Korea</span><span class="ko-score">2</span></div><div class="ko-team"><span class="ko-name">🇨🇭 Switzerland</span><span class="ko-score">1</span></div></div>
+    <div class="ko-match"><div class="ko-date">Jun 29<span class="ko-badge">12:00 PM</span></div><div class="ko-team"><span class="ko-name">🇧🇷 Brazil</span><span class="ko-score"></span></div><div class="ko-team"><span class="ko-name">🇳🇱 Netherlands</span><span class="ko-score"></span></div></div>
+    <div class="ko-match"><div class="ko-date">Jun 29<span class="ko-badge">6:00 PM</span></div><div class="ko-team"><span class="ko-name">🇩🇪 Germany</span><span class="ko-score"></span></div><div class="ko-team"><span class="ko-name">🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scotland (3rd)</span><span class="ko-score"></span></div></div>
+  </div>
+  <div class="theme-c hidden" id="bracket-c">
+    <div class="ko-match"><div class="ko-date">Jun 28<span class="ko-badge">FT</span></div><div class="ko-team winner"><span class="ko-name">🇰🇷 South Korea</span><span class="ko-score">2</span></div><div class="ko-team"><span class="ko-name">🇨🇭 Switzerland</span><span class="ko-score">1</span></div></div>
+    <div class="ko-match"><div class="ko-date">Jun 29<span class="ko-badge">12:00 PM</span></div><div class="ko-team"><span class="ko-name">🇧🇷 Brazil</span><span class="ko-score"></span></div><div class="ko-team"><span class="ko-name">🇳🇱 Netherlands</span><span class="ko-score"></span></div></div>
+    <div class="ko-match"><div class="ko-date">Jun 29<span class="ko-badge">6:00 PM</span></div><div class="ko-team"><span class="ko-name">🇩🇪 Germany</span><span class="ko-score"></span></div><div class="ko-team"><span class="ko-name">🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scotland (3rd)</span><span class="ko-score"></span></div></div>
+  </div>
+</div>
+
+<!-- GROUP STANDINGS -->
+<div class="section">
+  <div class="section-title">Group Standings</div>
+  <div class="groups-grid">
+    <div class="theme-a" id="groups-a">
+      <div class="group-card"><h3>Group A</h3>
+        <table class="standings-table"><thead><tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody>
+        <tr class="qual"><td>1</td><td>🇲🇽 Mexico</td><td>3</td><td>3</td><td>0</td><td>0</td><td>+4</td><td class="pts">9</td></tr>
+        <tr class="qual"><td>2</td><td>🇰🇷 South Korea</td><td>3</td><td>2</td><td>0</td><td>1</td><td>+1</td><td class="pts">6</td></tr>
+        <tr><td>3</td><td>🇨🇿 Czechia</td><td>3</td><td>0</td><td>1</td><td>2</td><td>-2</td><td class="pts">1</td></tr>
+        <tr><td>4</td><td>🇿🇦 South Africa</td><td>3</td><td>0</td><td>1</td><td>2</td><td>-3</td><td class="pts">1</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+    <div class="theme-b hidden" id="groups-b">
+      <div class="group-card"><h3>Group A</h3>
+        <table class="standings-table"><thead><tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody>
+        <tr class="qual"><td>1</td><td>🇲🇽 Mexico</td><td>3</td><td>3</td><td>0</td><td>0</td><td>+4</td><td class="pts">9</td></tr>
+        <tr class="qual"><td>2</td><td>🇰🇷 South Korea</td><td>3</td><td>2</td><td>0</td><td>1</td><td>+1</td><td class="pts">6</td></tr>
+        <tr><td>3</td><td>🇨🇿 Czechia</td><td>3</td><td>0</td><td>1</td><td>2</td><td>-2</td><td class="pts">1</td></tr>
+        <tr><td>4</td><td>🇿🇦 South Africa</td><td>3</td><td>0</td><td>1</td><td>2</td><td>-3</td><td class="pts">1</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+    <div class="theme-c hidden" id="groups-c">
+      <div class="group-card"><h3>Group A</h3>
+        <table class="standings-table"><thead><tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody>
+        <tr class="qual"><td>1</td><td>🇲🇽 Mexico</td><td>3</td><td>3</td><td>0</td><td>0</td><td>+4</td><td class="pts">9</td></tr>
+        <tr class="qual"><td>2</td><td>🇰🇷 South Korea</td><td>3</td><td>2</td><td>0</td><td>1</td><td>+1</td><td class="pts">6</td></tr>
+        <tr><td>3</td><td>🇨🇿 Czechia</td><td>3</td><td>0</td><td>1</td><td>2</td><td>-2</td><td class="pts">1</td></tr>
+        <tr><td>4</td><td>🇿🇦 South Africa</td><td>3</td><td>0</td><td>1</td><td>2</td><td>-3</td><td class="pts">1</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SIMULATOR -->
+<div class="section">
+  <div class="section-title">Simulator Score Input</div>
+  <div class="theme-a" id="sim-a">
+    <div class="sim-row"><span class="sim-team right">🇧🇷 Brazil</span><div class="sim-score-box">2</div><span class="sim-colon">:</span><div class="sim-score-box">0</div><span class="sim-team">Scotland 🏴󠁧󠁢󠁳󠁣󠁴󠁿</span></div>
+    <div class="sim-row"><span class="sim-team right">🇺🇸 United States</span><div class="sim-score-box">3</div><span class="sim-colon">:</span><div class="sim-score-box">1</div><span class="sim-team">Paraguay 🇵🇾</span></div>
+  </div>
+  <div class="theme-b hidden" id="sim-b">
+    <div class="sim-row"><span class="sim-team right">🇧🇷 Brazil</span><div class="sim-score-box">2</div><span class="sim-colon">:</span><div class="sim-score-box">0</div><span class="sim-team">Scotland 🏴󠁧󠁢󠁳󠁣󠁴󠁿</span></div>
+    <div class="sim-row"><span class="sim-team right">🇺🇸 United States</span><div class="sim-score-box">3</div><span class="sim-colon">:</span><div class="sim-score-box">1</div><span class="sim-team">Paraguay 🇵🇾</span></div>
+  </div>
+  <div class="theme-c hidden" id="sim-c">
+    <div class="sim-row"><span class="sim-team right">🇧🇷 Brazil</span><div class="sim-score-box">2</div><span class="sim-colon">:</span><div class="sim-score-box">0</div><span class="sim-team">Scotland 🏴󠁧󠁢󠁳󠁣󠁴󠁿</span></div>
+    <div class="sim-row"><span class="sim-team right">🇺🇸 United States</span><div class="sim-score-box">3</div><span class="sim-colon">:</span><div class="sim-score-box">1</div><span class="sim-team">Paraguay 🇵🇾</span></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+function setTheme(t) {
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.theme-btn')[['a','b','c'].indexOf(t)].classList.add('active');
+  ['live','bracket','groups','sim'].forEach(section => {
+    ['a','b','c'].forEach(th => {
+      const el = document.getElementById(section + '-' + th);
+      if (el) el.classList.toggle('hidden', th !== t);
+    });
+  });
+}
+</script>
+</body>
+</html>
