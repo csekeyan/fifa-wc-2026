@@ -525,7 +525,7 @@ footer .disclaimer { margin-top: 4px; font-size: 0.65rem; }
 
 /* Each half */
 .tree-half { display: flex; flex: 1; }
-.tree-half.right { flex-direction: row-reverse; }
+.tree-half.right { flex-direction: row; }
 
 /* Each column of matches */
 .tree-col { display: flex; flex-direction: column; justify-content: space-around; padding: 2px 0; min-width: 120px; }
@@ -551,7 +551,7 @@ footer .disclaimer { margin-top: 4px; font-size: 0.65rem; }
   height: 1px;
   background: rgba(147,180,245,0.2);
 }
-.tree-half.right .tree-col:not(:last-child) .tree-match::after {
+.tree-half.right .tree-col:not(:first-child) .tree-match::after {
   content: '';
   position: absolute;
   left: -21px;
