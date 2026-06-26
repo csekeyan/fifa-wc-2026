@@ -1,0 +1,10 @@
+name = "fifa-wc26-scraper"
+main = "index.js"
+compatibility_date = "2024-09-23"
+
+[triggers]
+crons = ["*/15 * * * *"]
+
+[[kv_namespaces]]
+binding = "FIFA_KV"
+id = "fce7bde466cb4ae7863ba9abd620ccee"
