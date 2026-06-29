@@ -94,6 +94,13 @@ async function fetchMatches() {
       match.home.winner = home.winner || false;
       match.away.winner = away.winner || false;
     }
+    // Capture penalty/AET info from notes
+    const notes = comp.notes || [];
+    if (notes.length > 0) {
+      match.note = notes[0].headline || "";
+    }
+    if (status === "STATUS_FINAL_PEN") match.penalties = true;
+    if (status === "STATUS_FINAL_AET") match.aet = true;
     return match;
   });
 }

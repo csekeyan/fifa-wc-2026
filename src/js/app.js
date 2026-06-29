@@ -211,8 +211,20 @@ function renderKnockoutMatch(m) {
   
   let statusBadge = '';
   if (isLive) statusBadge = '<span class="ko-badge live">LIVE</span>';
-  else if (isComplete) statusBadge = '<span class="ko-badge done">FT</span>';
-  else statusBadge = `<span class="ko-badge">${time}</span>`;
+  else if (isComplete) {
+    let ftLabel = 'FT';
+    if (m.penalties) ftLabel = 'PEN';
+    else if (m.aet) ftLabel = 'AET';
+    statusBadge = `<span class="ko-badge done">${ftLabel}</span>`;
+  } else statusBadge = `<span class="ko-badge">${time}</span>`;
+  
+  // Penalty/AET note (e.g. "4-3 on penalties")
+  let noteHtml = '';
+  if (m.note && isComplete) {
+    const penMatch = m.note.match(/(\d+-\d+) on penalties/);
+    if (penMatch) noteHtml = `<div class="ko-note">(${penMatch[1]} pen)</div>`;
+    else if (m.aet) noteHtml = '<div class="ko-note">(AET)</div>';
+  }
   
   const homeClass = isComplete && m.home.winner ? 'winner' : '';
   const awayClass = isComplete && m.away.winner ? 'winner' : '';
@@ -229,6 +241,7 @@ function renderKnockoutMatch(m) {
       <span class="ko-name">${m.away.flag} ${m.away.team}</span>
       <span class="ko-score">${awayScore}</span>
     </div>
+    ${noteHtml}
   </div>`;
 }
 

@@ -404,6 +404,7 @@ footer .disclaimer { margin-top: 4px; font-size: 0.65rem; }
 .ko-team.winner .ko-name { color: var(--green-bright); font-weight: 700; }
 .ko-score { font-size: 1.1rem; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums; min-width: 16px; text-align: right; }
 .ko-team:not(.winner) .ko-score { color: var(--text-secondary); }
+.ko-note { font-size: 0.62rem; color: var(--gold); text-align: center; margin-top: 4px; font-weight: 600; }
 
 /* Bracket path visualization */
 .bracket-path { margin-top: 20px; padding: 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; position: relative; }
