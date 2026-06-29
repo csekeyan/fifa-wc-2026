@@ -1,10 +1,5 @@
 import { subscribe, startPolling, getData, R32_BRACKET } from './data.js';
 import { startLivePolling, renderLiveScoreboard } from './livescore.js';
-import { 
-  setPrediction, getPrediction, clearAllPredictions, getPredictionCount,
-  setUpdateCallback, simulateStandings, getSimulatedThirds, getSimulatedBracket,
-  generateShareLink, isSharedView
-} from './simulator.js';
 import { attachTeamClickHandlers, openMatchModal } from './modals.js';
 import { renderBracketTree } from './bracketTree.js';
 
@@ -13,19 +8,7 @@ function init() {
   initTabs();
   startPolling();
   subscribe(render);
-  setUpdateCallback(() => {
-    const data = getData();
-    if (data) renderSimulator(data);
-  });
-  // Auto-switch to simulate tab if shared link
-  if (window.location.search.includes('sim=')) {
-    setTimeout(() => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      document.querySelector('.tab-btn[data-tab="simulate"]')?.classList.add('active');
-      document.getElementById('tab-simulate')?.classList.add('active');
-    }, 100);
-  }
+
   // Live scoreboard polls ESPN directly every 30s
   startLivePolling((liveData) => {
     const container = document.getElementById('tab-live');
@@ -42,10 +25,8 @@ function init() {
 function render(data) {
   renderSummary(data);
   renderGroups(data);
-  renderThirdPlace(data);
   renderBracket(data);
   renderSchedule(data);
-  renderSimulator(data);
   updateMeta(data);
   // Make all team names clickable for detail popup
   attachTeamClickHandlers(document.querySelector('main'));
