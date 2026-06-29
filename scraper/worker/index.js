@@ -112,8 +112,9 @@ function buildPayload(groups, matches) {
     if (m.group) { m.round = "group"; continue; }
     const combined = m.home.team + " " + m.away.team;
     if (combined.includes("Semifinal") || combined.includes("Semi-final")) m.round = "sf";
-    else if (combined.includes("Round of 16")) m.round = "r16";
+    else if (combined.includes("Round of 16")) m.round = "qf";
     else if (combined.includes("Quarter")) m.round = "qf";
+    else if (combined.includes("Round of 32")) m.round = "r16";
     else if (combined.includes("Final") && !combined.includes("Semi")) m.round = "final";
     else m.round = "r32";
   }
