@@ -37,7 +37,8 @@ export function renderLiveScoreboard(container, data) {
 
   const events = data.events;
   const live = events.filter(e => isLive(e));
-  const completed = events.filter(e => e.competitions[0].status.type.name === 'STATUS_FULL_TIME');
+  const isComplete = (e) => ['STATUS_FULL_TIME','STATUS_FINAL_PEN','STATUS_FINAL_AET','STATUS_FINAL'].includes(e.competitions[0].status.type.name);
+  const completed = events.filter(e => isComplete(e));
   const upcoming = events.filter(e => e.competitions[0].status.type.name === 'STATUS_SCHEDULED');
 
   let html = '<div class="live-scoreboard">';
@@ -82,7 +83,7 @@ export function renderLiveScoreboard(container, data) {
 
 function isLive(event) {
   const status = event.competitions[0].status.type.name;
-  return ['STATUS_IN_PROGRESS', 'STATUS_FIRST_HALF', 'STATUS_SECOND_HALF', 'STATUS_HALFTIME', 'STATUS_END_PERIOD'].includes(status);
+  return ['STATUS_IN_PROGRESS', 'STATUS_FIRST_HALF', 'STATUS_SECOND_HALF', 'STATUS_HALFTIME', 'STATUS_END_PERIOD', 'STATUS_EXTRA_TIME', 'STATUS_PENALTY_SHOOTOUT', 'STATUS_OVERTIME'].includes(status);
 }
 
 function renderLiveMatch(event) {

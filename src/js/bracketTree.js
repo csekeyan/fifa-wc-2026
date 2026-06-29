@@ -102,8 +102,8 @@ function renderCol(matches, roundClass) {
 }
 
 function renderTreeMatch(m, isFinal = false) {
-  const isComplete = m.status === 'STATUS_FULL_TIME';
-  const isLive = ['STATUS_IN_PROGRESS','STATUS_FIRST_HALF','STATUS_SECOND_HALF','STATUS_HALFTIME'].includes(m.status);
+  const isComplete = ['STATUS_FULL_TIME','STATUS_FINAL_PEN','STATUS_FINAL_AET','STATUS_FINAL'].includes(m.status);
+  const isLive = ['STATUS_IN_PROGRESS','STATUS_FIRST_HALF','STATUS_SECOND_HALF','STATUS_HALFTIME','STATUS_END_PERIOD','STATUS_EXTRA_TIME','STATUS_PENALTY_SHOOTOUT','STATUS_OVERTIME'].includes(m.status);
   const isTbd = m.home.team.includes('Winner') || m.home.team.includes('Place');
 
   const homeWin = isComplete && m.home.winner;

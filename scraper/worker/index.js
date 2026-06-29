@@ -90,7 +90,7 @@ async function fetchMatches() {
       away: { team: away.team.displayName, flag: FLAGS[away.team.displayName] || "", score: away.score || "" },
       status, group: "", venue: event.venue?.fullName || "", round: "r32",
     };
-    if (status === "STATUS_FULL_TIME") {
+    if (["STATUS_FULL_TIME","STATUS_FINAL_PEN","STATUS_FINAL_AET","STATUS_FINAL"].includes(status)) {
       match.home.winner = home.winner || false;
       match.away.winner = away.winner || false;
     }
@@ -119,8 +119,9 @@ function buildPayload(groups, matches) {
     else m.round = "r32";
   }
 
-  const played = matches.filter(m => m.status === "STATUS_FULL_TIME").length;
-  const goals = matches.filter(m => m.status === "STATUS_FULL_TIME")
+  const DONE = ["STATUS_FULL_TIME","STATUS_FINAL_PEN","STATUS_FINAL_AET","STATUS_FINAL"];
+  const played = matches.filter(m => DONE.includes(m.status)).length;
+  const goals = matches.filter(m => DONE.includes(m.status))
     .reduce((sum, m) => sum + parseInt(m.home.score || 0) + parseInt(m.away.score || 0), 0);
   const maxPlayed = Math.max(...Object.values(groups).flatMap(g => g.teams.map(t => t.p)));
   const phase = maxPlayed < 3 ? `Group Stage \u00b7 Matchday ${maxPlayed + 1} of 3` : "Knockout Stage";

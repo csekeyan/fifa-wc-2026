@@ -129,7 +129,7 @@ function renderBracket(data) {
     { id: 'final', label: 'Final', count: final.length, matches: final },
   ];
   stages.forEach((s, i) => {
-    const played = s.matches.filter(m => m.status === 'STATUS_FULL_TIME').length;
+    const played = s.matches.filter(m => ['STATUS_FULL_TIME','STATUS_FINAL_PEN','STATUS_FINAL_AET','STATUS_FINAL'].includes(m.status)).length;
     const active = i === 0 ? 'active' : '';
     const disabled = s.count === 0 ? 'disabled' : '';
     html += `<button class="stage-btn ${active} ${disabled}" data-stage="${s.id}">${s.label}<span class="stage-count">${played}/${s.count}</span></button>`;
@@ -205,8 +205,8 @@ function renderBracket(data) {
 function renderKnockoutMatch(m) {
   const date = new Date(m.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   const time = new Date(m.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-  const isComplete = m.status === 'STATUS_FULL_TIME';
-  const isLive = ['STATUS_IN_PROGRESS','STATUS_FIRST_HALF','STATUS_SECOND_HALF','STATUS_HALFTIME'].includes(m.status);
+  const isComplete = ['STATUS_FULL_TIME','STATUS_FINAL_PEN','STATUS_FINAL_AET','STATUS_FINAL'].includes(m.status);
+  const isLive = ['STATUS_IN_PROGRESS','STATUS_FIRST_HALF','STATUS_SECOND_HALF','STATUS_HALFTIME','STATUS_END_PERIOD','STATUS_EXTRA_TIME','STATUS_PENALTY_SHOOTOUT','STATUS_OVERTIME'].includes(m.status);
   const isTbd = m.home.team.includes('Winner') || m.home.team.includes('Place') || m.away.team.includes('Winner') || m.away.team.includes('Place');
   
   let statusBadge = '';
@@ -239,7 +239,7 @@ function renderSchedule(data) {
   
   const live = matches.filter(m => ['STATUS_IN_PROGRESS', 'STATUS_FIRST_HALF', 'STATUS_SECOND_HALF', 'STATUS_HALFTIME'].includes(m.status));
   const upcoming = matches.filter(m => m.status === 'STATUS_SCHEDULED').slice(0, 20);
-  const completed = matches.filter(m => m.status === 'STATUS_FULL_TIME').slice(-10).reverse();
+  const completed = matches.filter(m => ['STATUS_FULL_TIME','STATUS_FINAL_PEN','STATUS_FINAL_AET','STATUS_FINAL'].includes(m.status)).slice(-10).reverse();
   
   let html = '<div class="schedule-section">';
   
