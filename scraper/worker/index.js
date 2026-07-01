@@ -115,15 +115,31 @@ function buildPayload(groups, matches) {
     const ag = teamToGroup[m.away.team] || "";
     if (hg && hg === ag) m.group = hg;
   }
+  // Tag rounds using ESPN match IDs (sequential and stable)
+  // R32: 760486-760501 (16 matches), R16: 760502-760509 (8), QF: 760510-760513 (4), SF: 760514-760515 (2), Final: 760516 (1)
+  const ROUND_BY_ID = {};
+  for (let i = 760486; i <= 760501; i++) ROUND_BY_ID[i] = 'r32';
+  for (let i = 760502; i <= 760509; i++) ROUND_BY_ID[i] = 'r16';
+  for (let i = 760510; i <= 760513; i++) ROUND_BY_ID[i] = 'qf';
+  for (let i = 760514; i <= 760515; i++) ROUND_BY_ID[i] = 'sf';
+  ROUND_BY_ID[760516] = 'final';
+  ROUND_BY_ID[760517] = '3rd'; // 3rd place match
+  
   for (const m of matches) {
     if (m.group) { m.round = "group"; continue; }
-    const combined = m.home.team + " " + m.away.team;
-    if (combined.includes("Semifinal") || combined.includes("Semi-final")) m.round = "sf";
-    else if (combined.includes("Round of 16")) m.round = "qf";
-    else if (combined.includes("Quarter")) m.round = "qf";
-    else if (combined.includes("Round of 32")) m.round = "r16";
-    else if (combined.includes("Final") && !combined.includes("Semi")) m.round = "final";
-    else m.round = "r32";
+    // Use ID-based lookup (reliable even after ESPN resolves team names)
+    if (ROUND_BY_ID[parseInt(m.id)]) {
+      m.round = ROUND_BY_ID[parseInt(m.id)];
+    } else {
+      // Fallback for any unexpected IDs
+      const combined = m.home.team + " " + m.away.team;
+      if (combined.includes("Semifinal") || combined.includes("Semi-final")) m.round = "sf";
+      else if (combined.includes("Round of 16")) m.round = "qf";
+      else if (combined.includes("Quarter")) m.round = "qf";
+      else if (combined.includes("Round of 32")) m.round = "r16";
+      else if (combined.includes("Final") && !combined.includes("Semi")) m.round = "final";
+      else m.round = "r32";
+    }
   }
 
   const DONE = ["STATUS_FULL_TIME","STATUS_FINAL_PEN","STATUS_FINAL_AET","STATUS_FINAL"];

@@ -16,24 +16,13 @@ export function renderBracketTree(data) {
 
   if (r32.length === 0) return '<div class="stage-empty">Knockout stage not yet started.</div>';
 
-  // The R32→R16 bracket mapping (from the data):
-  // R16[0]: R32[0] vs R32[2]
-  // R16[1]: R32[1] vs R32[4]
-  // R16[2]: R32[3] vs R32[5]
-  // R16[3]: R32[6] vs R32[7]
-  // R16[4]: R32[10] vs R32[11]
-  // R16[5]: R32[8] vs R32[9]
-  // R16[6]: R32[13] vs R32[15]
-  // R16[7]: R32[12] vs R32[14]
-
-  // Left bracket half (8 R32 → 4 R16 → 2 QF → 1 SF)
-  const leftR32 = [r32[0], r32[2], r32[1], r32[4], r32[3], r32[5], r32[6], r32[7]];
+  // Split bracket into two halves (first 8 R32 left, last 8 right)
+  const leftR32 = r32.slice(0, 8);
   const leftR16 = r16.slice(0, 4);
   const leftQF = qf.slice(0, 2);
   const leftSF = sf.length > 0 ? [sf[0]] : [null];
 
-  // Right bracket half
-  const rightR32 = [r32[10], r32[11], r32[8], r32[9], r32[13], r32[15], r32[12], r32[14]];
+  const rightR32 = r32.slice(8, 16);
   const rightR16 = r16.slice(4, 8);
   const rightQF = qf.slice(2, 4);
   const rightSF = sf.length > 1 ? [sf[1]] : [null];
